@@ -16,7 +16,7 @@
 <script>
 import { mapActions } from 'vuex'
 import { Tag } from 'element-ui'
-import { mapDeptData } from '../utils/util_pc.js'
+import { mapDeptData } from '../../utils/common.js'
 
 const wisTree = () => import('./wisTree.vue')
 
@@ -86,7 +86,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  .comContainer_wsd {
+  .comContainer_wisSelectDept {
     & .deptC {
       display: flex;
       flex-wrap: wrap;

@@ -118,7 +118,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  .comContainer_wsdu {
+  .comContainer_wisSelectDeptUser {
     & .deptUserC {
       display: flex;
       align-items: center;
