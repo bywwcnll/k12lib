@@ -1,19 +1,23 @@
 <template>
   <div class="comContainer_wsdu">
     <div class="deptUserC">
-      <div v-for="(el, index) in selectedUserList" :key="index" class="deptUserImgC">
-        <img :src="el.avatar" alt="" class="deptUserImg">
-        <div class="closeI" @click="handleRemoveUserTag(index)">
-          <i class="el-icon-circle-close"></i>
+      <template v-if="enableDept">
+        <el-tag v-for="(el, index) in selectedUserList" :key="index"
+        class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
+      </template>
+      <template v-else>
+        <div v-for="(el, index) in selectedUserList" :key="index" class="deptUserImgC">
+          <img :src="el.avatar" alt="" class="deptUserImg">
+          <div class="closeI" @click="handleRemoveUserTag(index)">
+            <i class="el-icon-circle-close"></i>
+          </div>
         </div>
-      </div>
-      <!-- <el-tag v-for="(el, index) in selectedUserList" :key="index"
-        class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag> -->
+      </template>
       <el-button v-if="selectedUserList.length === 0" @click="dialogVisible = true" type="text" icon="el-icon-plus">添加</el-button>
       <el-button v-else @click="dialogVisible = true" type="text">修改</el-button>
     </div>
 
-    <wisTree :dialogVisible.sync="dialogVisible"
+    <wisTree :dialogVisible.sync="dialogVisible" :hideSearch="true"
       :deptIdsList.sync="selectedUserList" :title="title"
       :deptLoad="handleInspectorLoad"></wisTree>
   </div>
@@ -38,6 +42,10 @@ export default {
     value: {
       type: Array,
       default: () => []
+    },
+    enableDept: {
+      type: Boolean,
+      default: false
     }
   },
   components: {
@@ -81,7 +89,7 @@ export default {
             value: el.deptId,
             subDeptNum: 1,
             pinyinName: el.pinyinName,
-            disabled: true
+            disabled: !this.enableDept
           }
         })
         let userList = (userRes.data || []).map(el => {
@@ -118,7 +126,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  .comContainer_wisSelectDeptUser {
+  .comContainer_wsdu {
     & .deptUserC {
       display: flex;
       align-items: center;

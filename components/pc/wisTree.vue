@@ -1,10 +1,10 @@
 <template>
   <div class="comContainer_wisTree">
-    <el-dialog :title="`选择${title}`" custom-class="wtDialogC" append-to-body
+    <el-dialog :title="`选择${title}`" custom-class="comContainer_wisTree_wtDialogC" append-to-body
       :visible.sync="deptDialogVisible" top="100px" @closed="onDialogClose">
       <div class="wtMainC">
         <div class="wtTreeC" :class="{hideDisabledCheckbox: hideDisabledCheckbox}">
-          <el-input v-model="searchValue" class="wtSearchInput" clearable prefix-icon="el-icon-search" placeholder="搜索部门"></el-input>
+          <el-input v-if="!hideSearch" v-model="searchValue" class="wtSearchInput" clearable prefix-icon="el-icon-search" placeholder="搜索部门"></el-input>
           <el-tree v-if="showType === 'lazy'" ref="wtDeptsTree" class="wtElTree" show-checkbox
             lazy :load="onDeptLoad"
             node-key="value" :check-strictly="true" :props="deptProps"
@@ -66,6 +66,10 @@ export default {
     showType: {
       type: String,
       default: 'lazy'
+    },
+    hideSearch: {
+      type: Boolean,
+      default: false
     },
     hideDisabledCheckbox: {
       type: Boolean,
@@ -198,89 +202,82 @@ export default {
 </script>
 
 <style lang="scss">
-  .comContainer_wisTree {
-    & .wtDialogC {
-      width: 540px;
-      & .el-dialog__body {
-        padding: 10px 20px !important;
-      }
-      & .el-dialog__footer {
-        padding: 10px 20px !important;
-        border-top: 1px solid #f1f1f1;
-        background-color: #f9f9f9;
-      }
-      & .wtMainC {
-        background-color: #fff;
+  .comContainer_wisTree_wtDialogC {
+    width: 540px;
+    & .el-dialog__body {
+      padding: 10px 20px !important;
+    }
+    & .el-dialog__footer {
+      padding: 10px 20px !important;
+      border-top: 1px solid #f1f1f1;
+      background-color: #f9f9f9;
+    }
+    & .wtMainC {
+      background-color: #fff;
+      display: flex;
+      align-items: stretch;
+      height: 330px;
+      & .wtTreeC {
+        width: 260px;
+        padding-right: 15px;
+        border-right: 1px solid #f1f1f1;
         display: flex;
-        align-items: stretch;
-        height: 330px;
-        & .wtTreeC {
-          width: 260px;
-          padding-right: 15px;
-          border-right: 1px solid #f1f1f1;
-          display: flex;
-          flex-direction: column;
-          & .wtSearchInput {
-            margin-bottom: 10px;
-          }
-          & .wtElTree {
-            flex: 1;
-            overflow: auto;
+        flex-direction: column;
+        &.hideDisabledCheckbox {
+          & .el-checkbox.is-disabled {
+            display: none;
           }
         }
-        & .wtResultC {
-          width: 240px;
-          padding-left: 15px;
-          display: flex;
-          flex-direction: column;
-          & .wtSelectedName {
-            height: 32px;
-            line-height: 32px;
-            font-size: 16px;
-            margin-bottom: 10px;
-          }
-          & .wtSelectedC {
-            flex: 1;
-            overflow: auto;
-          }
+        & .wtSearchInput {
+          margin-bottom: 10px;
         }
-      }
-      & .wtSelectedCell {
-        height: 26px;
-        display: flex;
-        align-items: center;
-        &:hover {
-          background-color: #f5f7fa;
-        }
-        & .wtSCName {
+        & .wtElTree {
           flex: 1;
-          margin-left: 10px;
-        }
-        & .wtSCClose {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 26px;
-          cursor: pointer;
+          overflow: auto;
         }
       }
-      & .el-tree-node__expand-icon {
-        padding: 4px !important;
-        font-size: 16px !important;
-      }
-      & .el-tree-node__expand-icon, & .el-tree-node__children.collapse-transition {
-        transition-duration: 0.15s, 0.15s !important;
+      & .wtResultC {
+        width: 240px;
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        & .wtSelectedName {
+          height: 32px;
+          line-height: 32px;
+          font-size: 16px;
+          margin-bottom: 10px;
+        }
+        & .wtSelectedC {
+          flex: 1;
+          overflow: auto;
+        }
       }
     }
-  }
-  
-</style>
-<style lang="scss">
-  .comContainer_wisTree {
-    & .wtTreeC.hideDisabledCheckbox {
-      & .el-checkbox.is-disabled {
-        display: none;
+    & .wtSelectedCell {
+      height: 26px;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background-color: #f5f7fa;
       }
+      & .wtSCName {
+        flex: 1;
+        margin-left: 10px;
+      }
+      & .wtSCClose {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 26px;
+        cursor: pointer;
+      }
+    }
+    & .el-tree-node__expand-icon {
+      padding: 4px !important;
+      font-size: 16px !important;
+    }
+    & .el-tree-node__expand-icon, & .el-tree-node__children.collapse-transition {
+      transition-duration: 0.15s, 0.15s !important;
     }
     & .wtPersonC {
       display: flex;

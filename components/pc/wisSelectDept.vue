@@ -1,5 +1,5 @@
 <template>
-  <div class="comContainer_wsd">
+  <div class="comContainer_wisSelectDept">
     <div class="deptC">
       <el-tag v-for="(el, index) in selectedDeptList" :key="index" size="medium"
         class="deptTag" type="info" closable @close="handleRemoveDeptTag(index)">{{el.label}}</el-tag>
