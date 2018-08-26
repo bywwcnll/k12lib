@@ -2,7 +2,7 @@
   <div class="comContainer_wsdu">
     <div class="deptUserC">
       <template v-if="enableDept">
-        <el-tag v-for="(el, index) in selectedUserList" :key="index"
+        <el-tag v-for="(el, index) in selectedUserList" :key="index" size="medium"
         class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
       </template>
       <template v-else>
@@ -19,7 +19,7 @@
 
     <wisTree :dialogVisible.sync="dialogVisible" :hideSearch="true"
       :deptIdsList.sync="selectedUserList" :title="title"
-      :deptLoad="handleInspectorLoad"></wisTree>
+      :deptLoad="handleDeptLoad"></wisTree>
   </div>
 </template>
 
@@ -35,6 +35,10 @@ export default {
       type: String,
       default: '部门人员'
     },
+    initDeptId: {
+      type: String,
+      default: ''
+    },
     deptType: {
       type: String,
       default: ''
@@ -46,7 +50,8 @@ export default {
     enableDept: {
       type: Boolean,
       default: false
-    }
+    },
+    defaultDeptData: Array
   },
   components: {
     [Tag.name]: Tag,
@@ -75,13 +80,17 @@ export default {
   methods: {
     ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId']),
 
-    async handleInspectorLoad (node, resolve) {
-      let deptId = node.data && node.data.value ? node.data.value : -1
+    async handleDeptLoad (node, resolve) {
+      if (this.defaultDeptData && !node.data) {
+        resolve(this.defaultDeptData)
+        return
+      }
+      let deptId = node.data && node.data.value ? node.data.value : (this.initDeptId ? this.initDeptId : -1)
       let subDeptNum = node.data && node.data.subDeptNum ? node.data.subDeptNum : 0
       if (subDeptNum > 0 || deptId === -1) {
         let [subDeptRes, userRes] = await Promise.all([
-          this.listSubDeptByDeptId({ deptId, deptType: this.deptType, wisLoading: false }),
-          this.listUserByDeptId({ deptId, wisLoading: false })
+          this.listSubDeptByDeptId({ deptId, deptType: this.deptType }),
+          this.listUserByDeptId({ deptId })
         ])
         let subDeptList = (subDeptRes.data || []).map(el => {
           return {
@@ -129,6 +138,7 @@ export default {
   .comContainer_wsdu {
     & .deptUserC {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       margin-top: 10px;
       min-height: 30px;
