@@ -43,6 +43,10 @@ export default {
       type: String,
       default: ''
     },
+    userType: {
+      type: String,
+      default: ''
+    },
     value: {
       type: Array,
       default: () => []
@@ -90,7 +94,7 @@ export default {
       if (subDeptNum > 0 || deptId === -1) {
         let [subDeptRes, userRes] = await Promise.all([
           this.listSubDeptByDeptId({ deptId, deptType: this.deptType }),
-          this.listUserByDeptId({ deptId })
+          this.listUserByDeptId({ deptId, userType: this.userType })
         ])
         let subDeptList = (subDeptRes.data || []).map(el => {
           return {
