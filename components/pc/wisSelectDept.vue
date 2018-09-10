@@ -68,9 +68,8 @@ export default {
         this.dialogVisible = true
       } else {
         let res = await this.listAllDept({
-          /* 部门类型，1：行政部门；2：年级部门；3：班级部门，参数不传是查询全部 */
-          deptType: this.deptType,
-          wisLoading: false
+          /* 部门类型，1：行政部门；2：年级、班级部门；参数不传是查询全部 */
+          deptType: this.deptType
         })
         this.allDeptData = mapDeptData((res.data || []))
         this.dialogVisible = true

@@ -117,7 +117,7 @@ export default {
         })
         resolve([...subDeptList, ...userList])
       } else {
-        let userRes = await this.listUserByDeptId({ deptId, wisLoading: false })
+        let userRes = await this.listUserByDeptId({ deptId })
         resolve((userRes.data || []).map(el => {
           return {
             label: el.userName,
