@@ -3,14 +3,17 @@ export const downloadFile = async ({action = '', params = {}, method = 'GET'}) =
     let queryStr = action.slice(action.indexOf('?') + 1) || ''
     if (queryStr.length > 0) {
       let queryParamsArray = queryStr.split('&')
+      let queryParams = {}
       queryParamsArray.forEach(el => {
         let kw = el.split('=')
         if (kw.length === 2) {
-          let tmp = {}
-          tmp[kw[0]] = kw[1]
-          params = {...tmp, ...params}
+          queryParams[kw[0]] = queryParams[1]
         }
       })
+      Object.keys(params).forEach(el => {
+        queryParams[el] = params[el]
+      })
+      params = queryParams
     }
   }
   let form = window.document.createElement('form')
