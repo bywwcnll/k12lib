@@ -97,7 +97,8 @@ export default {
         }
       }
     },
-    deptLoad: {}
+    deptLoad: {},
+    limit: Number
   },
   created () {},
   mounted () {},
@@ -179,11 +180,37 @@ export default {
       let deptIndex = this.checkedDeptList.map(el => el.value).indexOf(data.value)
       if (checked) {
         if (deptIndex === -1) {
-          this.checkedDeptList.push(data)
+          if (this.limit === 0) {
+            this.checkedDeptList.forEach(el => {
+              this.$refs.wtDeptsTree.setChecked(el.value, false)
+            })
+            this.$refs.wtDeptsTree.setChecked(data.value, false)
+            this.$wisToast(`限制选择数量为${this.limit}`, 'warning')
+            return
+          } else if (this.limit > 0) {
+            if (this.limit === 1) {
+              this.checkedDeptList.forEach(el => {
+                this.$refs.wtDeptsTree.setChecked(el.value, false)
+              })
+              this.$refs.wtDeptsTree.setChecked(data.value, true)
+              this.checkedDeptList = [data]
+            } else if (this.limit > this.checkedDeptList.length) {
+              this.checkedDeptList.push(data)
+            } else {
+              this.$refs.wtDeptsTree.setChecked(data.value, false)
+              this.$wisToast(`最多选择${this.limit}个`, 'warning')
+            }
+          } else {
+            this.checkedDeptList.push(data)
+          }
         }
       } else {
         if (deptIndex > -1) {
-          this.checkedDeptList.splice(deptIndex, 1)
+          if (this.limit !== 1) {
+            this.checkedDeptList.splice(deptIndex, 1)
+          } else {
+            this.$refs.wtDeptsTree.setChecked(data.value, true)
+          }
         }
       }
     },
