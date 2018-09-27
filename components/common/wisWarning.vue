@@ -4,7 +4,7 @@
     <div class="tipC">
       <template v-if="['adaptMobile', 'adaptPC'].indexOf(type) > -1">
         <div class="firstLine">{{`该功能仅在${type === 'adaptMobile' ? '手机' : 'PC'}端查看`}}</div>
-        <div class="lastLine">{{`该页面${type === 'adaptMobile' ? '电脑版' : '手机端'}暂不支持显示`}}</div>
+        <div class="lastLine">{{`${type === 'adaptMobile' ? '电脑版' : '手机端'}暂不支持显示`}}</div>
       </template>
       <template v-else>
         <div class="text">{{text}}</div>
@@ -52,7 +52,7 @@ export default {
       if (this.title) {
         return this.title
       } else if (this.type === 'empty') {
-        return '暂无数据，可以休息一下啦～'
+        return '暂无数据'
       } else if (this.type === 'warning') {
         return '该内容已被删除'
       }
