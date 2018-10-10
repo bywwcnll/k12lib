@@ -222,6 +222,7 @@ export default {
     },
     onConfirm () {
       this.$emit('update:deptIdsList', [...this.checkedDeptList])
+      this.$emit('confirm', this.checkedDeptList)
       this.deptDialogVisible = false
     }
   }
