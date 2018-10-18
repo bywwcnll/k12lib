@@ -6,9 +6,9 @@
         <div class="wtTreeC" :class="{hideDisabledCheckbox: hideDisabledCheckbox}">
           <el-input v-if="!hideSearch" v-model="searchValue" class="wtSearchInput"
             clearable prefix-icon="el-icon-search" :placeholder="searchPlaceholder"></el-input>
-          <el-input v-model="advancedSearchValue" class="wtSearchInput"
+          <el-input v-if="showAdvancedSearchFlag" v-model="advancedSearchValue" class="wtSearchInput"
             clearable prefix-icon="el-icon-search" :placeholder="adSearchPlaceholder"></el-input>
-          <el-button-group class="wtUserRoleGroupC">
+          <el-button-group v-if="showTagListFlag" class="wtUserRoleGroupC">
             <el-button v-for="(el, index) in tagList" :key="index"
               :type="activeTag === el ? 'primary' : ''" @click="activeTag = el">{{el}}</el-button>
           </el-button-group>
@@ -113,7 +113,7 @@ export default {
     },
     searchPlaceholder: {
       type: String,
-      default: '过滤'
+      default: '搜索部门'
     },
     hideDisabledCheckbox: {
       type: Boolean,
@@ -144,6 +144,7 @@ export default {
     deptLoad: {},
     limit: Number,
 
+    showAdvancedSearchFlag: Boolean,
     adSearchPlaceholder: {
       type: String,
       default: '搜索'

@@ -8,7 +8,7 @@
     </div>
 
     <wisTree :dialogVisible.sync="dialogVisible" :title="title"
-      showType="all" :allData="allDeptData"
+      showType="all" :allData="allDeptData" :limit="limit"
       :deptIdsList.sync="selectedDeptList"></wisTree>
   </div>
 </template>
@@ -33,7 +33,8 @@ export default {
     value: {
       type: Array,
       default: () => []
-    }
+    },
+    limit: Number
   },
   components: {
     [Tag.name]: Tag,

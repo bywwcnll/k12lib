@@ -19,7 +19,7 @@
 
     <wisTree :dialogVisible.sync="dialogVisible" :hideSearch="true"
       :deptIdsList.sync="selectedUserList" :title="title"
-      :deptLoad="handleDeptLoad"></wisTree>
+      :deptLoad="handleDeptLoad" :limit="limit"></wisTree>
   </div>
 </template>
 
@@ -55,7 +55,8 @@ export default {
       type: Boolean,
       default: false
     },
-    defaultDeptData: Array
+    defaultDeptData: Array,
+    limit: Number
   },
   components: {
     [Tag.name]: Tag,
