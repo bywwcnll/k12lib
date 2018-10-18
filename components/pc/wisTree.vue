@@ -1,29 +1,54 @@
 <template>
   <div class="comContainer_wisTree">
-    <el-dialog :title="`选择${title}`" custom-class="comContainer_wisTree_wtDialogC" append-to-body
+    <el-dialog :title="titleTxt" custom-class="comContainer_wisTree_wtDialogC" append-to-body
       :visible.sync="deptDialogVisible" top="100px" @closed="onDialogClose">
       <div class="wtMainC">
         <div class="wtTreeC" :class="{hideDisabledCheckbox: hideDisabledCheckbox}">
-          <el-input v-if="!hideSearch" v-model="searchValue" class="wtSearchInput" clearable prefix-icon="el-icon-search" placeholder="搜索部门"></el-input>
-          <el-tree v-if="showType === 'lazy'" ref="wtDeptsTree" class="wtElTree" show-checkbox
-            lazy :load="onDeptLoad"
-            node-key="value" :check-strictly="true" :props="deptProps"
-            :default-checked-keys="defaultCheckedKeys"
-            :expand-on-click-node="false" :check-on-click-node="true"
-            :filter-node-method="onFilterNode"
-            :render-content="renderContent"
-            @check-change="onTreeChange"></el-tree>
-          <el-tree v-if="showType === 'all'" ref="wtDeptsTree" class="wtElTree" show-checkbox
-            :data="allData"
-            node-key="value" :check-strictly="true" :props="deptProps"
-            :default-checked-keys="defaultCheckedKeys"
-            :expand-on-click-node="false" :check-on-click-node="true"
-            :filter-node-method="onFilterNode"
-            :render-content="renderContent"
-            @check-change="onTreeChange"></el-tree>
+          <el-input v-if="!hideSearch" v-model="searchValue" class="wtSearchInput"
+            clearable prefix-icon="el-icon-search" :placeholder="searchPlaceholder"></el-input>
+          <el-input v-model="advancedSearchValue" class="wtSearchInput"
+            clearable prefix-icon="el-icon-search" :placeholder="adSearchPlaceholder"></el-input>
+          <el-button-group class="wtUserRoleGroupC">
+            <el-button v-for="(el, index) in tagList" :key="index"
+              :type="activeTag === el ? 'primary' : ''" @click="activeTag = el">{{el}}</el-button>
+          </el-button-group>
+          <template v-if="showElTreeFlag">
+            <div v-show="!advancedSearchValue" class="wtElTreeC">
+              <el-tree v-if="showType === 'lazy'" ref="wtDeptsTree" class="wtElTree" show-checkbox
+                lazy :load="onDeptLoad"
+                node-key="value" :check-strictly="true" :props="deptProps"
+                :default-checked-keys="defaultCheckedKeys"
+                :expand-on-click-node="false" :check-on-click-node="true"
+                :filter-node-method="onFilterNode"
+                :render-content="renderContent"
+                @check-change="onTreeChange"></el-tree>
+              <el-tree v-if="showType === 'all'" ref="wtDeptsTree" class="wtElTree" show-checkbox
+                :data="allData"
+                node-key="value" :check-strictly="true" :props="deptProps"
+                :default-checked-keys="defaultCheckedKeys"
+                :expand-on-click-node="false" :check-on-click-node="true"
+                :filter-node-method="onFilterNode"
+                :render-content="renderContent"
+                @check-change="onTreeChange"></el-tree>
+            </div>
+          </template>
+          <div v-show="advancedSearchValue" class="advancedSearchListC">
+            <div v-for="(el, index) in advancedSearchList" :key="index" class="cell"
+              @click="onTreeChange(el, true)">
+              <svg class="wtDeptIcon" viewBox="0 0 1024 1024">
+                <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>
+                <path d="M659.56 487.725h237.417V548.1H659.56v-60.375z"/>
+              </svg>
+              <span class="wtPersonName" :title="el.label">{{el.label}}</span>
+              <span class="wtPersonDept" :title="el.deptNames">{{el.deptNames}}</span>
+            </div>
+            <div v-show="isEmpty(advancedSearchList)" class="advancedSearchEmpty">暂无数据</div>
+          </div>
+          <div v-show="advancedSearchValue && !isEmpty(advancedSearchList) && advancedSearchList.length >= 50"
+            class="advancedSearchTip">最多显示前50条结果</div>
         </div>
         <div class="wtResultC">
-          <div class="wtSelectedName">已选择的{{title}}</div>
+          <div class="wtSelectedName">{{resultTitleTxt}}</div>
           <div class="wtSelectedC">
             <div v-for="(el, index) in checkedDeptList" :key="index" class="wtSelectedCell">
               <svg v-if="!el.isUser" class="wtDeptIcon" viewBox="0 0 1024 1024">
@@ -35,7 +60,7 @@
                 <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>
                 <path d="M659.56 487.725h237.417V548.1H659.56v-60.375z"/>
               </svg>
-              <div class="wtSCName">{{el.label}}</div>
+              <div class="wtSCName" :title="el.label">{{el.label}}</div>
               <div class="wtSCClose" @click="onRemoveDept(el, index)">
                 <i class="el-icon-close"></i>
               </div>
@@ -52,9 +77,14 @@
 </template>
 
 <script>
-import { Input, Tree } from 'element-ui'
+import { Button, ButtonGroup, Dialog, Input, Tree } from 'element-ui'
+import { debounce, isEmpty } from 'lodash'
+
 export default {
   components: {
+    [Button.name]: Button,
+    [ButtonGroup.name]: ButtonGroup,
+    [Dialog.name]: Dialog,
     [Input.name]: Input,
     [Tree.name]: Tree
   },
@@ -63,13 +93,27 @@ export default {
       type: String,
       default: '部门/班级'
     },
+    customTitle: {
+      type: Object,
+      // validator: function (value) {
+      //   return !isEmpty(value) && value.title && value.resultTitle
+      // },
+      default () {
+        return {}
+      }
+    },
     showType: {
       type: String,
       default: 'lazy'
     },
+    /* 部门过滤性的搜索 */
     hideSearch: {
       type: Boolean,
       default: false
+    },
+    searchPlaceholder: {
+      type: String,
+      default: '过滤'
     },
     hideDisabledCheckbox: {
       type: Boolean,
@@ -98,19 +142,49 @@ export default {
       }
     },
     deptLoad: {},
-    limit: Number
-  },
-  created () {},
-  mounted () {},
-  data () {
-    return {
-      deptDialogVisible: false,
-      searchValue: '',
-      defaultCheckedKeys: [],
-      checkedDeptList: []
+    limit: Number,
+
+    adSearchPlaceholder: {
+      type: String,
+      default: '搜索'
+    },
+    advancedLoad: {},
+    showTagListFlag: Boolean,
+    tagList: {
+      type: Array,
+      default () {
+        return ['教职工', '学生', '家长']
+      }
     }
   },
-  computed: {},
+  created () {},
+  mounted () {
+    if (this.showTagListFlag && !isEmpty(this.tagList)) {
+      this.activeTag = this.tagList[0]
+    }
+  },
+  data () {
+    return {
+      isEmpty,
+      showElTreeFlag: true,
+      deptDialogVisible: false,
+      searchValue: '',
+      activeTag: '',
+      defaultCheckedKeys: [],
+      checkedDeptList: [],
+
+      advancedSearchValue: '',
+      advancedSearchList: []
+    }
+  },
+  computed: {
+    titleTxt () {
+      return isEmpty(this.customTitle) ? '选择' + this.title : this.customTitle.title
+    },
+    resultTitleTxt () {
+      return isEmpty(this.customTitle) ? '已选择的' + this.title : this.customTitle.resultTitle
+    }
+  },
   watch: {
     dialogVisible (v) {
       this.deptDialogVisible = v
@@ -138,25 +212,49 @@ export default {
     searchValue (v) {
       // console.log(Object.keys(this.$refs.wtDeptsTree.store.nodesMap))
       this.$refs.wtDeptsTree.filter(v)
+    },
+    advancedSearchValue (v) {
+      this.doAdvancedSearch()
+    },
+    activeTag (v) {
+      this.$emit('tagChange', v)
+      this.$nextTick(async () => {
+        if (this.advancedSearchValue) {
+          await this.doAdvancedSearch()
+        }
+      })
     }
   },
   filters: {},
   methods: {
+    doAdvancedSearch: debounce(async function () {
+      if (!this.advancedSearchValue) {
+        this.advancedSearchList = []
+        return
+      }
+      this.advancedSearchList = await this.advancedLoad(this.advancedSearchValue)
+    }, 500),
+    forceRenderTree () {
+      this.showElTreeFlag = false
+      this.$nextTick(() => {
+        this.showElTreeFlag = true
+      })
+    },
     renderContent (h, { node, data, store }) {
       if (data.isUser) {
         /* 人员项 */
         return (
-          <span class="el-tree-node__label wtPersonC">
+          <div class="el-tree-node__label wtPersonC">
             <svg class="wtDeptIcon" viewBox="0 0 1024 1024">
               <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>
               <path d="M659.56 487.725h237.417V548.1H659.56v-60.375z"/>
             </svg>
-            <span>{node.label}</span>
-          </span>
+            <span class="wtPersonName" title={data.label}>{data.label}</span>
+          </div>
         )
       } else {
         return (
-          <span class="el-tree-node__label">{node.label}</span>
+          <span class="el-tree-node__label comContainer_wisTree_ellipsis" title={node.label}>{node.label}</span>
         )
       }
     },
@@ -168,10 +266,12 @@ export default {
     },
     async onDeptLoad (node, resolve) {
       await this.deptLoad(node, resolve)
-      let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()
-      halfCheckedKeys.forEach(el => {
-        this.$refs.wtDeptsTree.setChecked(el, false)
-      })
+      if (this.$refs.wtDeptsTree) {
+        let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()
+        halfCheckedKeys.forEach(el => {
+          this.$refs.wtDeptsTree.setChecked(el, false)
+        })
+      }
     },
     onTreeChange (data, checked) {
       if ((!data.value && data.value !== 0) || data.disabled) {
@@ -185,20 +285,26 @@ export default {
               this.$refs.wtDeptsTree.setChecked(el.value, false)
             })
             this.$refs.wtDeptsTree.setChecked(data.value, false)
-            this.$wisToast(`限制选择数量为${this.limit}`, 'warning')
+            if (this.$wisToast) {
+              this.$wisToast(`限制选择数量为${this.limit}`, 'warning')
+            }
             return
           } else if (this.limit > 0) {
             if (this.limit === 1) {
-              this.checkedDeptList.forEach(el => {
-                this.$refs.wtDeptsTree.setChecked(el.value, false)
-              })
-              this.$refs.wtDeptsTree.setChecked(data.value, true)
+              if (this.$refs.wtDeptsTree) {
+                this.checkedDeptList.forEach(el => {
+                  this.$refs.wtDeptsTree.setChecked(el.value, false)
+                })
+                this.$refs.wtDeptsTree.setChecked(data.value, true)
+              }
               this.checkedDeptList = [data]
             } else if (this.limit > this.checkedDeptList.length) {
               this.checkedDeptList.push(data)
             } else {
-              this.$refs.wtDeptsTree.setChecked(data.value, false)
-              this.$wisToast(`最多选择${this.limit}个`, 'warning')
+              if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
+              if (this.$wisToast) {
+                this.$wisToast(`最多选择${this.limit}个`, 'warning')
+              }
             }
           } else {
             this.checkedDeptList.push(data)
@@ -209,7 +315,7 @@ export default {
           if (this.limit !== 1) {
             this.checkedDeptList.splice(deptIndex, 1)
           } else {
-            this.$refs.wtDeptsTree.setChecked(data.value, true)
+            if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, true)
           }
         }
       }
@@ -217,7 +323,7 @@ export default {
     onRemoveDept (data, deptIndex) {
       this.checkedDeptList.splice(deptIndex, 1)
       this.$nextTick(() => {
-        this.$refs.wtDeptsTree.setChecked(data.value, false)
+        if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
       })
     },
     onConfirm () {
@@ -230,6 +336,11 @@ export default {
 </script>
 
 <style lang="scss">
+  .comContainer_wisTree_ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
   .comContainer_wisTree_wtDialogC {
     width: 540px;
     & .el-dialog__body {
@@ -259,9 +370,52 @@ export default {
         & .wtSearchInput {
           margin-bottom: 10px;
         }
-        & .wtElTree {
+        & .wtElTreeC {
           flex: 1;
           overflow: auto;
+          & .wtElTree {
+            height: 100%;
+            overflow: auto;
+          }
+        }
+        & .advancedSearchListC {
+          flex: 1;
+          overflow: auto;
+          & .cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            &:hover {
+              background-color: #f5f7fa;
+            }
+            & .wtPersonName {
+              flex: 1;
+              width: 0;
+              @extend .comContainer_wisTree_ellipsis;
+            }
+            & .wtPersonDept {
+              text-align: right;
+              font-size: 12px;
+              color: #999;
+              width: 100px;
+              @extend .comContainer_wisTree_ellipsis;
+            }
+          }
+          & .advancedSearchEmpty {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #6f7180;
+            font-size: 14px;
+          }
+        }
+        & .advancedSearchTip {
+          text-align: center;
+          height: 30px;
+          line-height: 40px;
+          color: #6f7180;
         }
       }
       & .wtResultC {
@@ -290,7 +444,9 @@ export default {
       }
       & .wtSCName {
         flex: 1;
+        width: 0;
         margin-left: 10px;
+        @extend .comContainer_wisTree_ellipsis;
       }
       & .wtSCClose {
         display: flex;
@@ -308,14 +464,31 @@ export default {
       transition-duration: 0.15s, 0.15s !important;
     }
     & .wtPersonC {
+      width: 0;
+      flex: 1;
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      & .wtPersonName {
+        flex: 1;
+        width: 0;
+      }
+      & .wtPersonMobile {
+        width: 83px;
+      }
     }
     & .wtDeptIcon {
       fill: #6aace2;
       width: 26px;
       height: 26px;
       padding: 4px;
+    }
+    & .wtUserRoleGroupC {
+      display: flex !important;
+      margin-bottom: 10px;
+      & > button {
+        flex: 1 !important;
+      }
     }
   }
 </style>
