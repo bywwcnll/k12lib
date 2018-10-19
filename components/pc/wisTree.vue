@@ -15,7 +15,7 @@
           <template v-if="showElTreeFlag">
             <div v-show="!advancedSearchValue" class="wtElTreeC">
               <el-tree v-if="showType === 'lazy'" ref="wtDeptsTree" class="wtElTree" show-checkbox
-                lazy :load="onDeptLoad"
+                lazy :load="onDeptLoad" :default-expanded-keys="defaultExpandedKeys"
                 node-key="value" :check-strictly="true" :props="deptProps"
                 :default-checked-keys="defaultCheckedKeys"
                 :expand-on-click-node="false" :check-on-click-node="true"
@@ -23,7 +23,7 @@
                 :render-content="renderContent"
                 @check-change="onTreeChange"></el-tree>
               <el-tree v-if="showType === 'all'" ref="wtDeptsTree" class="wtElTree" show-checkbox
-                :data="allData"
+                :data="allData" :default-expanded-keys="defaultExpandedKeys"
                 node-key="value" :check-strictly="true" :props="deptProps"
                 :default-checked-keys="defaultCheckedKeys"
                 :expand-on-click-node="false" :check-on-click-node="true"
@@ -163,9 +163,13 @@ export default {
     if (this.showTagListFlag && !isEmpty(this.tagList)) {
       this.activeTag = this.tagList[0]
     }
+    if (this.showType === 'all' && !isEmpty(this.allData)) {
+      this.defaultExpandedKeys = [this.allData[0].value]
+    }
   },
   data () {
     return {
+      loadedCounts: 0,
       isEmpty,
       showElTreeFlag: true,
       deptDialogVisible: false,
@@ -175,7 +179,8 @@ export default {
       checkedDeptList: [],
 
       advancedSearchValue: '',
-      advancedSearchList: []
+      advancedSearchList: [],
+      defaultExpandedKeys: []
     }
   },
   computed: {
@@ -224,6 +229,11 @@ export default {
           await this.doAdvancedSearch()
         }
       })
+    },
+    allData (v) {
+      if (this.showType === 'all' && !isEmpty(v)) {
+        this.defaultExpandedKeys = [v[0].value]
+      }
     }
   },
   filters: {},
@@ -267,10 +277,16 @@ export default {
     },
     async onDeptLoad (node, resolve) {
       await this.deptLoad(node, resolve)
+      this.loadedCounts++
       if (this.$refs.wtDeptsTree) {
         let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()
         halfCheckedKeys.forEach(el => {
           this.$refs.wtDeptsTree.setChecked(el, false)
+        })
+      }
+      if (this.loadedCounts < 2) {
+        this.$nextTick(() => {
+          this.defaultExpandedKeys = [this.$refs.wtDeptsTree.root.childNodes[0].data.value]
         })
       }
     },
