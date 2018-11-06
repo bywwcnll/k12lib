@@ -8,7 +8,7 @@
             clearable prefix-icon="el-icon-search" :placeholder="searchPlaceholder"></el-input>
           <el-input v-if="showAdvancedSearchFlag" v-model="advancedSearchValue" class="wtSearchInput"
             clearable prefix-icon="el-icon-search" :placeholder="adSearchPlaceholder"></el-input>
-          <el-button-group v-if="showTagListFlag" class="wtUserRoleGroupC">
+          <el-button-group v-if="showTagListFlag && tagList.length > 1" class="wtUserRoleGroupC">
             <el-button v-for="(el, index) in tagList" :key="index"
               :type="activeTag === el ? 'primary' : ''" @click="activeTag = el">{{el}}</el-button>
           </el-button-group>
