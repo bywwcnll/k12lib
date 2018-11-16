@@ -17,9 +17,12 @@
       <el-button v-else @click="dialogVisible = true" type="text">修改</el-button>
     </div>
 
-    <wisTree :dialogVisible.sync="dialogVisible" :hideSearch="true"
-      :deptIdsList.sync="selectedUserList" :title="title"
-      :deptLoad="handleDeptLoad" :limit="limit"></wisTree>
+    <wisTree ref="wisTreeDom" :dialogVisible.sync="dialogVisible" :hideSearch="true"
+      :deptIdsList.sync="selectedUserList" :title="title" :customTitle="customTitle"
+      :showAdvancedSearchFlag="showAdvancedSearchFlag" adSearchPlaceholder="按用户名和手机号搜索" :advancedLoad="handleAdvancedLoad"
+      :showTagListFlag="showTagListFlag" :tagList="tagList"
+      :deptLoad="handleDeptLoad" :limit="limit"
+      @tagChange="handleTagChange"></wisTree>
   </div>
 </template>
 
@@ -34,6 +37,12 @@ export default {
     title: {
       type: String,
       default: '部门人员'
+    },
+    customTitle: {
+      type: Object,
+      default () {
+        return {}
+      }
     },
     initDeptId: {
       type: String,
@@ -56,7 +65,10 @@ export default {
       default: false
     },
     defaultDeptData: Array,
-    limit: Number
+    limit: Number,
+    showAdvancedSearchFlag: Boolean,
+    showTagListFlag: Boolean,
+    tagList: Array
   },
   components: {
     [Tag.name]: Tag,
@@ -64,12 +76,16 @@ export default {
   },
   created () {
     this.selectedUserList = this.value
+    this._deptType = this.deptType
+    this._userType = this.userType
   },
   mounted () {},
   data () {
     return {
       dialogVisible: false,
-      selectedUserList: []
+      selectedUserList: [],
+      _deptType: '',
+      _userType: ''
     }
   },
   computed: {},
@@ -83,8 +99,45 @@ export default {
   },
   filters: {},
   methods: {
-    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId']),
+    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchUserByKeyword']),
 
+    async handleAdvancedLoad (keyword) {
+      let res = await this.searchUserByKeyword({
+        corpId: window.corpId,
+        keyword,
+        userType: this._userType
+      })
+      return (res.data || []).map(el => {
+        return {
+          label: el.userName,
+          value: el.userId,
+          mobile: el.mobile,
+          maskMobile: el.maskMobile,
+          deptNames: el.deptNames,
+          subDeptNum: 0,
+          isUser: true,
+          pinyinName: el.pinyinName,
+          avatar: el.avatar
+        }
+      })
+    },
+    handleTagChange (v) {
+      switch (v) {
+        case '教职工':
+          this._deptType = ''
+          this._userType = '1'
+          break
+        case '学生':
+          this._deptType = '2'
+          this._userType = '2'
+          break
+        case '家长':
+          this._deptType = '2'
+          this._userType = '3'
+          break
+      }
+      this.$refs.wisTreeDom.forceRenderTree()
+    },
     async handleDeptLoad (node, resolve) {
       if (this.defaultDeptData && !node.data) {
         resolve(this.defaultDeptData)
@@ -94,8 +147,8 @@ export default {
       let subDeptNum = node.data && node.data.subDeptNum ? node.data.subDeptNum : 0
       if (subDeptNum > 0 || deptId === -1) {
         let [subDeptRes, userRes] = await Promise.all([
-          this.listSubDeptByDeptId({ deptId, deptType: this.deptType }),
-          this.listUserByDeptId({ deptId, userType: this.userType })
+          this.listSubDeptByDeptId({ deptId, deptType: this._deptType }),
+          this.listUserByDeptId({ deptId, userType: this._userType })
         ])
         let subDeptList = (subDeptRes.data || []).map(el => {
           return {
