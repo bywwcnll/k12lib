@@ -8,7 +8,7 @@
       :firstDayOfWeek="1" :show-last-month="false" :show-next-month="false"
       @on-view-change="onViewChange">
     </inline-calendar>
-    <img :src="`./static/images/${showSingleLineFlag ? 'calendarOpen' : 'calendarClose'}.png`"
+    <img :src="showSingleLineFlag ? calendarOpen : calendarClose"
       class="calendarOptIcon" alt="" @click="onSwitch">
   </div>
 </template>
@@ -16,6 +16,8 @@
 <script>
 import { InlineCalendar } from 'k12vux'
 import wisSingleLineCalendar from './wisSingleLineCalendar'
+import calendarOpen from '../static/images/calendarOpen.png'
+import calendarClose from '../static/images/calendarClose.png'
 
 export default {
   props: {
@@ -43,6 +45,8 @@ export default {
   mounted () {},
   data () {
     return {
+      calendarOpen,
+      calendarClose,
       showSingleLineFlag: this.singleLineFlag,
       singleLineDate: this.value,
       meetingDate: this.value

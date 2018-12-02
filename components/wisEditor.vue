@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import E from '../../static/wangEditor/release/wangEditor.min.js'
+import E from '../static/wangEditor/release/wangEditor.min.js'
 
 export default {
   props: {

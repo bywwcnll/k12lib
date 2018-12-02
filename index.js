@@ -1,17 +1,27 @@
-import wisDialog from './components/pc/wisDialog.vue'
-import wisEditor from './components/pc/wisEditor.vue'
-import wisSelectDept from './components/pc/wisSelectDept.vue'
-import wisSelectDeptUser from './components/pc/wisSelectDeptUser.vue'
-import wisSimpleTree from './components/pc/wisSimpleTree.vue'
-import wisTree from './components/pc/wisTree.vue'
-import wisWarning from './components/common/wisWarning.vue'
+import wisCell from './components/wisCell.vue'
+import wisDialog from './components/wisDialog.vue'
+import wisEditor from './components/wisEditor.vue'
+import wisImgFix from './components/wisImgFix.vue'
+import wisK12TreeCell from './components/wisK12TreeCell.vue'
+import wisMobileCalendar from './components/wisMobileCalendar.vue'
+import wisSelectDept from './components/wisSelectDept.vue'
+import wisSelectDeptUser from './components/wisSelectDeptUser.vue'
+import wisSimpleTree from './components/wisSimpleTree.vue'
+import wisSingleLineCalendar from './components/wisSingleLineCalendar.vue'
+import wisTree from './components/wisTree.vue'
+import wisWarning from './components/wisWarning.vue'
 
 export {
+  wisCell,
   wisDialog,
   wisEditor,
+  wisImgFix,
+  wisK12TreeCell,
+  wisMobileCalendar,
   wisSelectDept,
   wisSelectDeptUser,
   wisSimpleTree,
+  wisSingleLineCalendar,
   wisTree,
   wisWarning,
 }

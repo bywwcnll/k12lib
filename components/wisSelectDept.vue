@@ -16,7 +16,7 @@
 <script>
 import { mapActions } from 'vuex'
 import { Tag } from 'element-ui'
-import { mapDeptData } from '../../utils/common.js'
+import { mapDeptData } from '../utils/common.js'
 
 const wisTree = () => import('./wisTree.vue')
 

@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import adaptMobile from '../../static/images/adaptMobile.png'
-import adaptPC from '../../static/images/adaptPC.png'
-import empty from '../../static/images/empty.png'
-import warning from '../../static/images/warning.png'
+import adaptMobile from '../static/images/adaptMobile.png'
+import adaptPC from '../static/images/adaptPC.png'
+import empty from '../static/images/empty.png'
+import warning from '../static/images/warning.png'
 
 export default {
   props: {
