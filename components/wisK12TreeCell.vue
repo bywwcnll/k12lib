@@ -4,9 +4,10 @@
       <span v-if="displayStr">{{displayStr}}</span>
       <span v-else-if="placeholder" class="placeholder">{{placeholder}}</span>
     </div>
-    <k12-tree ref="k12TreeDom" v-model="selectedList" :show.sync="showTreeFlag" :load="onTreeLoad"
-      :defaultDeptId="defaultDeptId" :limit="limit" :onlySelectUser="selectedType === 2"
-      @confirm="onTreeConfirm"></k12-tree>
+    <k12-tree ref="k12TreeDom" v-model="selectedList" :key="k12TreeKey" :show.sync="showTreeFlag" :load="onTreeLoad"
+              :defaultDeptId="defaultDeptId" :limit="limit" :onlySelectUser="selectedType === 2"
+              :showSearch="selectedType !== 1" :searchLoad="onSearchLoad" :clearSearchValAfterConfirm="clearSearchValAfterConfirm"
+              @confirm="onTreeConfirm"></k12-tree>
   </cell>
 </template>
 
@@ -48,6 +49,9 @@ export default {
     },
     displayStrFormat: Function,
     customTreeLoad: Function,
+    customSearchLoad: Function,
+    searchResFilter: Function,
+    clearSearchValAfterConfirm: Boolean,
     deptType: String,
     userType: String,
     show: Boolean,
@@ -69,6 +73,7 @@ export default {
   },
   data () {
     return {
+      k12TreeKey: 'k12Tree_' + Math.random() * 10 ** 16,
       showTreeFlag: this.show,
       selectedList: [...this.value]
     }
@@ -101,7 +106,7 @@ export default {
   },
   filters: {},
   methods: {
-    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId']),
+    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchDeptUserByKeyword', 'searchUserByKeyword']),
 
     onClick () {
       this.showTreeFlag = true
@@ -109,7 +114,7 @@ export default {
     async onTreeLoad (data) {
       let { deptType, userType } = this
       let { deptId } = data
-      if (deptId === '-1' && this.defaultDeptData && this.defaultDeptData.length > 0) {
+      if (+deptId === -1 && this.defaultDeptData) {
         return this.defaultDeptData
       }
       if (this.customTreeLoad) {
@@ -132,6 +137,49 @@ export default {
     },
     onDeptPath (data, index) {
       this.$refs.k12TreeDom.onDeptPath(data, index)
+    },
+    async onSearchLoad (keyword) {
+      if (this.customSearchLoad) {
+        let customResult = await this.customSearchLoad(keyword)
+        return customResult
+      }
+      if (this.defaultDeptData) {
+        if (this.defaultDeptData.length === 0) {
+          return []
+        }
+        let deptIds = this.defaultDeptData.filter(el => el.deptId && !el.userId).map(el => el.deptId).join(',')
+        let defaultUserList = this.defaultDeptData.filter(el => !el.deptId && el.userId)
+        if (deptIds.length > 0) {
+          let searchDeptUserRes = await this.searchDeptUserByKeyword({
+            corpId: window.corpId,
+            keyword,
+            userType: this.userType,
+            deptIds
+          })
+          let searchFilterResult = searchDeptUserRes.data || []
+          if (this.searchResFilter) {
+            searchFilterResult = this.searchResFilter(searchFilterResult)
+          }
+          defaultUserList = [...defaultUserList, ...searchFilterResult]
+        }
+        let uniqUserList = []
+        defaultUserList.forEach(el => {
+          if (uniqUserList.map(i => i.userId).indexOf(el.userId) === -1) {
+            uniqUserList.push(el)
+          }
+        })
+        return uniqUserList.filter(el => {
+          return (el.userName || '').indexOf(keyword) > -1 ||
+            (el.pinyinName || '').indexOf(keyword) > -1 ||
+            (el.mobile || '').indexOf(keyword) > -1
+        })
+      }
+      let res = await this.searchUserByKeyword({
+        corpId: window.corpId,
+        keyword,
+        userType: this.userType
+      })
+      return (res.data || [])
     }
   }
 }
