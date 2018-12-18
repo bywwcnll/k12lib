@@ -1,6 +1,6 @@
 <template>
-  <cell primary="content" class="comContainer_wisCell" :class="{editable: editable}" :value-align="valueAlign" :align-items="alignItems"
-    :isLink="isLink" :link="link" :borderIntent="borderIntent" :arrowDirection="arrowDirection">
+  <cell primary="content" class="comContainer_wisCell" :class="{editable: editable}" :value-align="valueAlign" :align-items="cellAlignItems"
+    :isLink="isLink" :link="link" :borderIntent="borderIntent" :arrowDirection="arrowDirection" :required="required">
     <span slot="title" class="cellTitle">{{title}}</span>
     <div class="cellContent">
       <slot></slot>
@@ -23,22 +23,27 @@ export default {
       type: String,
       default: 'left'
     },
-    alignItems: {
-      type: String,
-      default: 'flex-start'
-    },
+    alignItems: String,
     borderIntent: {
       type: Boolean,
       default: true
     },
     arrowDirection: String,
-    editable: Boolean
+    editable: Boolean,
+    required: Boolean
   },
   components: {
     Cell
   },
+  created () {
+    if (this.isLink && !this.alignItems) {
+      this.cellAlignItems = 'center'
+    }
+  },
   data () {
-    return {}
+    return {
+      cellAlignItems: 'flex-start'
+    }
   }
 }
 </script>
