@@ -1,5 +1,6 @@
 <template>
-  <cell :title="title" is-link @click.native="onClick" :class="{hiddenCell: templateType !== 0}" :required="required">
+  <cell :title="title" is-link @click.native="onClick" :class="{hiddenCell: templateType !== 0}" :required="required"
+        :valueAlign="valueAlign">
     <div v-if="templateType === 0" ref="clampDom">
       <span v-if="displayStr">{{displayStr}}</span>
       <span v-else-if="placeholder" class="placeholder">{{placeholder}}</span>
@@ -59,7 +60,11 @@ export default {
       type: String,
       default: '请选择'
     },
-    required: Boolean
+    required: Boolean,
+    valueAlign: {
+      type: String,
+      default: 'right'
+    }
   },
   components: {
     Cell,

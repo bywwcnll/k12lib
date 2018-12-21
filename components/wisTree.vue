@@ -163,7 +163,7 @@ export default {
     if (this.showTagListFlag && !isEmpty(this.tagList)) {
       this.activeTag = this.tagList[0]
     }
-    if (this.showType === 'all' && !isEmpty(this.allData)) {
+    if (this.showType === 'all' && !isEmpty(this.allData) && !this.allData[0].isUser) {
       this.defaultExpandedKeys = [this.allData[0].value]
     }
   },
@@ -273,7 +273,7 @@ export default {
     },
     onFilterNode (value, data) {
       if (!value) return true
-      return data.label.indexOf(value) !== -1 || data.pinyinName.indexOf(value) !== -1
+      return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName || data.pinyinName.indexOf(value) !== -1)
     },
     async onDeptLoad (node, resolve) {
       await this.deptLoad(node, resolve)
@@ -286,7 +286,10 @@ export default {
       }
       if (this.loadedCounts < 2) {
         this.$nextTick(() => {
-          this.defaultExpandedKeys = [this.$refs.wtDeptsTree.root.childNodes[0].data.value]
+          let firstNode = this.$refs.wtDeptsTree.root.childNodes[0]
+          if (firstNode && !firstNode.data.isUser) {
+            this.defaultExpandedKeys = [this.$refs.wtDeptsTree.root.childNodes[0].data.value]
+          }
         })
       }
     },
