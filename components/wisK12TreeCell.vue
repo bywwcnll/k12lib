@@ -8,6 +8,7 @@
     <k12-tree ref="k12TreeDom" v-model="selectedList" :key="k12TreeKey" :show.sync="showTreeFlag" :load="onTreeLoad"
               :defaultDeptId="defaultDeptId" :limit="limit" :onlySelectUser="selectedType === 2"
               :showSearch="selectedType !== 1" :searchLoad="onSearchLoad" :clearSearchValAfterConfirm="clearSearchValAfterConfirm"
+              :parentMode="parentMode"
               @confirm="onTreeConfirm"></k12-tree>
   </cell>
 </template>
@@ -64,7 +65,8 @@ export default {
     valueAlign: {
       type: String,
       default: 'right'
-    }
+    },
+    parentMode: Boolean
   },
   components: {
     Cell,

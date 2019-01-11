@@ -156,7 +156,8 @@ export default {
       default () {
         return ['教职工', '学生', '家长']
       }
-    }
+    },
+    parentMode: Boolean
   },
   created () {},
   mounted () {
@@ -243,7 +244,14 @@ export default {
         this.advancedSearchList = []
         return
       }
-      this.advancedSearchList = await this.advancedLoad(this.advancedSearchValue)
+      let result = await this.advancedLoad(this.advancedSearchValue)
+      if (this.parentMode && result) {
+        result = result.map(el => {
+          if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
+          return el
+        })
+      }
+      this.advancedSearchList = result
     }, 500),
     forceRenderTree () {
       this.showElTreeFlag = false
@@ -276,7 +284,15 @@ export default {
       return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName || data.pinyinName.indexOf(value) !== -1)
     },
     async onDeptLoad (node, resolve) {
-      await this.deptLoad(node, resolve)
+      await this.deptLoad(node, (result) => {
+        if (this.parentMode && result) {
+          result = result.map(el => {
+            if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
+            return el
+          })
+        }
+        resolve(result)
+      })
       this.loadedCounts++
       if (this.$refs.wtDeptsTree) {
         let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()

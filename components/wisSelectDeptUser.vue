@@ -2,11 +2,11 @@
   <div class="comContainer_wsdu">
     <div class="deptUserC">
       <template v-if="enableDept">
-        <el-tag v-for="(el, index) in selectedUserList" :key="index" size="medium"
+        <el-tag v-for="(el, index) in renderSelectedUserList" :key="index" size="medium"
         class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
       </template>
       <template v-else>
-        <div v-for="(el, index) in selectedUserList" :key="index" class="deptUserImgC">
+        <div v-for="(el, index) in renderSelectedUserList" :key="index" class="deptUserImgC">
           <img :src="el.avatar" alt="" class="deptUserImg">
           <div class="closeI" @click="handleRemoveUserTag(index)">
             <i class="el-icon-circle-close"></i>
@@ -19,9 +19,9 @@
 
     <wisTree ref="wisTreeDom" :dialogVisible.sync="dialogVisible" :hideSearch="true"
       :deptIdsList.sync="selectedUserList" :title="title" :customTitle="customTitle"
-      :showAdvancedSearchFlag="showAdvancedSearchFlag" adSearchPlaceholder="按用户名和手机号搜索" :advancedLoad="handleAdvancedLoad"
+      :showAdvancedSearchFlag="showAdvancedSearchFlag" adSearchPlaceholder="按姓名和手机号搜索" :advancedLoad="handleAdvancedLoad"
       :showTagListFlag="showTagListFlag" :tagList="tagList"
-      :deptLoad="handleDeptLoad" :limit="limit"
+      :deptLoad="handleDeptLoad" :limit="limit" :parentMode="parentMode"
       @tagChange="handleTagChange"></wisTree>
   </div>
 </template>
@@ -66,9 +66,12 @@ export default {
     },
     defaultDeptData: Array,
     limit: Number,
+    customSearchLoad: Function,
+    searchResFilter: Function,
     showAdvancedSearchFlag: Boolean,
     showTagListFlag: Boolean,
-    tagList: Array
+    tagList: Array,
+    parentMode: Boolean
   },
   components: {
     [Tag.name]: Tag,
@@ -88,7 +91,17 @@ export default {
       _userType: ''
     }
   },
-  computed: {},
+  computed: {
+    renderSelectedUserList () {
+      if (this.parentMode) {
+        return (this.selectedUserList || []).map(el => {
+          if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
+          return el
+        })
+      }
+      return this.selectedUserList
+    }
+  },
   watch: {
     value (v) {
       this.selectedUserList = v
@@ -99,15 +112,60 @@ export default {
   },
   filters: {},
   methods: {
-    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchUserByKeyword']),
+    ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchDeptUserByKeyword', 'searchUserByKeyword']),
 
-    async handleAdvancedLoad (keyword) {
+    async getAdvancedLoadRes (keyword) {
+      if (this.customSearchLoad) {
+        let customResult = await this.customSearchLoad(keyword)
+        return customResult
+      }
+      if (this.defaultDeptData) {
+        if (this.defaultDeptData.length === 0) {
+          return []
+        }
+        let deptIds = this.defaultDeptData.filter(el => !el.isUser).map(el => el.value).join(',')
+        let defaultUserList = this.defaultDeptData.filter(el => el.isUser).map(el => {
+          el.userName = el.label
+          el.userId = el.value
+          delete el.label
+          delete el.value
+          return el
+        })
+        if (deptIds.length > 0) {
+          let searchDeptUserRes = await this.searchDeptUserByKeyword({
+            corpId: window.corpId,
+            keyword,
+            userType: this._userType,
+            deptIds
+          })
+          let searchFilterResult = searchDeptUserRes.data || []
+          if (this.searchResFilter) {
+            searchFilterResult = this.searchResFilter(searchFilterResult)
+          }
+          defaultUserList = [...defaultUserList, ...searchFilterResult]
+        }
+        let uniqUserList = []
+        defaultUserList.forEach(el => {
+          if (uniqUserList.map(i => i.userId).indexOf(el.userId) === -1) {
+            uniqUserList.push(el)
+          }
+        })
+        return uniqUserList.filter(el => {
+          return (el.userName || '').indexOf(keyword) > -1 ||
+            (el.pinyinName || '').indexOf(keyword) > -1 ||
+            (el.mobile || '').indexOf(keyword) > -1
+        })
+      }
       let res = await this.searchUserByKeyword({
         corpId: window.corpId,
         keyword,
         userType: this._userType
       })
-      return (res.data || []).map(el => {
+      return res.data || []
+    },
+    async handleAdvancedLoad (keyword) {
+      let result = await this.getAdvancedLoadRes(keyword)
+      return result.map(el => {
         return {
           label: el.userName,
           value: el.userId,
