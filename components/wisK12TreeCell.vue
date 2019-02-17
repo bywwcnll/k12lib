@@ -81,7 +81,7 @@ export default {
   data () {
     return {
       k12TreeKey: 'k12Tree_' + Math.random() * 10 ** 16,
-      showTreeFlag: this.show,
+      showTreeFlag: this.show || this.showContactsTreeFlag,
       selectedList: [...this.value]
     }
   },
@@ -95,6 +95,15 @@ export default {
         case 1: return this.selectedList.map(el => el.deptName).join('、')
         case 2: return this.selectedList.map(el => el.userName).join('、')
       }
+    },
+    computedDefaultData () {
+      return this.defaultDeptData || this.contactsDefaultData
+    },
+    computedCustomTreeLoad () {
+      return this.customTreeLoad || this.contactsTreeLoad
+    },
+    computedCustomSearchLoad () {
+      return this.customSearchLoad || this.contactsTreeSearch
     }
   },
   watch: {
@@ -108,7 +117,11 @@ export default {
       this.showTreeFlag = v
     },
     showTreeFlag (v) {
-      this.$emit('update:show', v)
+      if (this.hasOwnProperty('showContactsTreeFlag')) {
+        this.showContactsTreeFlag = v
+      } else {
+        this.$emit('update:show', v)
+      }
     }
   },
   filters: {},
@@ -121,11 +134,11 @@ export default {
     async onTreeLoad (data) {
       let { deptType, userType } = this
       let { deptId } = data
-      if (+deptId === -1 && this.defaultDeptData) {
-        return this.defaultDeptData
+      if (+deptId === -1 && this.computedDefaultData) {
+        return this.computedDefaultData
       }
-      if (this.customTreeLoad) {
-        let customResult = await this.customTreeLoad(data, {
+      if (this.computedCustomTreeLoad) {
+        let customResult = await this.computedCustomTreeLoad(data, {
           selectedType: this.selectedType
         })
         return customResult
@@ -146,16 +159,16 @@ export default {
       this.$refs.k12TreeDom.onDeptPath(data, index)
     },
     async onSearchLoad (keyword) {
-      if (this.customSearchLoad) {
-        let customResult = await this.customSearchLoad(keyword)
+      if (this.computedCustomSearchLoad) {
+        let customResult = await this.computedCustomSearchLoad(keyword)
         return customResult
       }
-      if (this.defaultDeptData) {
-        if (this.defaultDeptData.length === 0) {
+      if (this.computedDefaultData) {
+        if (this.computedDefaultData.length === 0) {
           return []
         }
-        let deptIds = this.defaultDeptData.filter(el => el.deptId && !el.userId).map(el => el.deptId).join(',')
-        let defaultUserList = this.defaultDeptData.filter(el => !el.deptId && el.userId)
+        let deptIds = this.computedDefaultData.filter(el => el.deptId && !el.userId).map(el => el.deptId).join(',')
+        let defaultUserList = this.computedDefaultData.filter(el => !el.deptId && el.userId)
         if (deptIds.length > 0) {
           let searchDeptUserRes = await this.searchDeptUserByKeyword({
             corpId: window.corpId,
