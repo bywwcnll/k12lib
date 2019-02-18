@@ -81,7 +81,7 @@ export default {
   data () {
     return {
       k12TreeKey: 'k12Tree_' + Math.random() * 10 ** 16,
-      showTreeFlag: this.show || this.showContactsTreeFlag,
+      showTreeFlag: this.show,
       selectedList: [...this.value]
     }
   },
@@ -97,13 +97,13 @@ export default {
       }
     },
     computedDefaultData () {
-      return this.defaultDeptData || this.contactsDefaultData
+      return !this.contactsMode ? this.defaultDeptData : this.contactsDefaultData
     },
     computedCustomTreeLoad () {
-      return this.customTreeLoad || this.contactsTreeLoad
+      return !this.contactsMode ? this.customTreeLoad : this.contactsTreeLoad
     },
     computedCustomSearchLoad () {
-      return this.customSearchLoad || this.contactsTreeSearch
+      return !this.contactsMode ? this.customSearchLoad : this.contactsTreeSearch
     }
   },
   watch: {
@@ -117,11 +117,7 @@ export default {
       this.showTreeFlag = v
     },
     showTreeFlag (v) {
-      if (this.hasOwnProperty('showContactsTreeFlag')) {
-        this.showContactsTreeFlag = v
-      } else {
-        this.$emit('update:show', v)
-      }
+      this.$emit('update:show', v)
     }
   },
   filters: {},
@@ -134,8 +130,16 @@ export default {
     async onTreeLoad (data) {
       let { deptType, userType } = this
       let { deptId } = data
-      if (+deptId === -1 && this.computedDefaultData) {
-        return this.computedDefaultData
+      if (+deptId === -1 && this.defaultDeptData) {
+        return this.defaultDeptData
+      }
+      if (+deptId === -1 && this.contactsMode) {
+        if (this.contactsDefaultData) {
+          return this.contactsDefaultData
+        } else {
+          let contactsListResult = await this.refreshContactsList()
+          return contactsListResult
+        }
       }
       if (this.computedCustomTreeLoad) {
         let customResult = await this.computedCustomTreeLoad(data, {
