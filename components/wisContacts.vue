@@ -1,6 +1,6 @@
 <script>
 import { mapActions } from 'vuex'
-import wisK12TreeCell from './wiswisK12TreeCell'
+import wisK12TreeCell from './wisK12TreeCell'
 
 export default {
   extends: wisK12TreeCell,
