@@ -39,8 +39,13 @@
                 <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>
                 <path d="M659.56 487.725h237.417V548.1H659.56v-60.375z"/>
               </svg>
-              <span class="wtPersonName" :title="el.label">{{el.label}}</span>
-              <span class="wtPersonDept" :title="el.deptNames">{{el.deptNames}}</span>
+              <div class="wtPersonDetail">
+                <div class="wtPersonND">
+                  <span class="wtPersonName" :title="el.label">{{el.label}}</span>
+                  <span class="wtPersonDept" :title="el.deptNames">{{el.deptNames}}</span>
+                </div>
+                <div v-if="el.corpName" class="wtPersonCorpName" :title="el.corpName">@{{el.corpName}}</div>
+              </div>
             </div>
             <div v-show="isEmpty(advancedSearchList)" class="advancedSearchEmpty">暂无数据</div>
           </div>
@@ -60,7 +65,10 @@
                 <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>
                 <path d="M659.56 487.725h237.417V548.1H659.56v-60.375z"/>
               </svg>
-              <div class="wtSCName" :title="el.label">{{el.label}}</div>
+              <div class="wtSCName">
+                <div class="wtSCName1" :title="el.label">{{el.label}}</div>
+                <div v-if="el.corpName" class="wtSCName2" :title="el.corpName">@{{el.corpName}}</div>
+              </div>
               <div class="wtSCClose" @click="onRemoveDept(el, index)">
                 <i class="el-icon-close"></i>
               </div>
@@ -141,7 +149,7 @@ export default {
         }
       }
     },
-    deptLoad: {},
+    deptLoad: Function,
     limit: Number,
 
     showAdvancedSearchFlag: Boolean,
@@ -149,7 +157,7 @@ export default {
       type: String,
       default: '搜索'
     },
-    advancedLoad: {},
+    advancedLoad: Function,
     showTagListFlag: Boolean,
     tagList: {
       type: Array,
@@ -379,147 +387,171 @@ export default {
   }
   .comContainer_wisTree_wtDialogC {
     width: 540px;
-    & .el-dialog__body {
+    .el-dialog__body {
       padding: 10px 20px !important;
     }
-    & .el-dialog__footer {
+    .el-dialog__footer {
       padding: 10px 20px !important;
       border-top: 1px solid #f1f1f1;
       background-color: #f9f9f9;
     }
-    & .wtMainC {
+    .wtMainC {
       background-color: #fff;
       display: flex;
       align-items: stretch;
       height: 330px;
-      & .wtTreeC {
+      .wtTreeC {
         width: 260px;
         padding-right: 15px;
         border-right: 1px solid #f1f1f1;
         display: flex;
         flex-direction: column;
         &.hideDisabledCheckbox {
-          & .el-checkbox.is-disabled {
+          .el-checkbox.is-disabled {
             display: none;
           }
         }
-        & .wtSearchInput {
+        .wtSearchInput {
           margin-bottom: 10px;
         }
-        & .wtElTreeC {
+        .wtElTreeC {
           flex: 1;
           overflow: auto;
-          & .wtElTree {
+          .wtElTree {
             height: 100%;
             overflow: auto;
           }
         }
-        & .advancedSearchListC {
-          flex: 1;
-          overflow: auto;
-          & .cell {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            &:hover {
-              background-color: #f5f7fa;
-            }
-            & .wtPersonName {
-              flex: 1;
-              width: 0;
-              @extend .comContainer_wisTree_ellipsis;
-            }
-            & .wtPersonDept {
-              text-align: right;
-              font-size: 12px;
-              color: #999;
-              width: 100px;
-              @extend .comContainer_wisTree_ellipsis;
-            }
-          }
-          & .advancedSearchEmpty {
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #6f7180;
-            font-size: 14px;
-          }
-        }
-        & .advancedSearchTip {
-          text-align: center;
-          height: 30px;
-          line-height: 40px;
-          color: #6f7180;
-        }
       }
-      & .wtResultC {
+      .wtResultC {
         width: 240px;
         padding-left: 15px;
         display: flex;
         flex-direction: column;
-        & .wtSelectedName {
+        .wtSelectedName {
           height: 32px;
           line-height: 32px;
           font-size: 16px;
           margin-bottom: 10px;
         }
-        & .wtSelectedC {
+        .wtSelectedC {
           flex: 1;
           overflow: auto;
         }
       }
     }
-    & .wtSelectedCell {
-      height: 26px;
+    .advancedSearchListC {
+      flex: 1;
+      overflow: auto;
+      .cell {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        cursor: pointer;
+        &:hover {
+          background-color: #f5f7fa;
+        }
+        .wtPersonDetail {
+          flex: 1;
+          width: 0;
+        }
+        .wtPersonND {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          min-height: 26px;
+        }
+        .wtPersonName {
+          flex: 1;
+          width: 0;
+          @extend .comContainer_wisTree_ellipsis;
+        }
+        .wtPersonDept {
+          text-align: right;
+          font-size: 12px;
+          color: #999;
+          width: 100px;
+          @extend .comContainer_wisTree_ellipsis;
+        }
+        .wtPersonCorpName {
+          font-size: 12px;
+          color: #FF6633;
+          @extend .comContainer_wisTree_ellipsis;
+        }
+      }
+      .advancedSearchEmpty {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #6f7180;
+        font-size: 14px;
+      }
+    }
+    .advancedSearchTip {
+      text-align: center;
+      height: 30px;
+      line-height: 40px;
+      color: #6f7180;
+    }
+    .wtSelectedCell {
+      min-height: 26px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       &:hover {
         background-color: #f5f7fa;
       }
-      & .wtSCName {
+      .wtSCName {
         flex: 1;
         width: 0;
-        margin-left: 10px;
-        @extend .comContainer_wisTree_ellipsis;
+        .wtSCName1 {
+          min-height: 26px;
+          line-height: 26px;
+          @extend .comContainer_wisTree_ellipsis;
+        }
+        .wtSCName2 {
+          font-size: 12px;
+          color: #FF6633;
+          @extend .comContainer_wisTree_ellipsis;
+        }
       }
-      & .wtSCClose {
+      .wtSCClose {
         display: flex;
         justify-content: center;
         align-items: center;
         width: 26px;
+        height: 26px;
         cursor: pointer;
       }
     }
-    & .el-tree-node__expand-icon {
+    .el-tree-node__expand-icon {
       padding: 4px !important;
       font-size: 16px !important;
     }
-    & .el-tree-node__expand-icon, & .el-tree-node__children.collapse-transition {
+    .el-tree-node__expand-icon, .el-tree-node__children.collapse-transition {
       transition-duration: 0.15s, 0.15s !important;
     }
-    & .wtPersonC {
+    .wtPersonC {
       width: 0;
       flex: 1;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      & .wtPersonName {
+      .wtPersonName {
         flex: 1;
         width: 0;
       }
-      & .wtPersonMobile {
+      .wtPersonMobile {
         width: 83px;
       }
     }
-    & .wtDeptIcon {
+    .wtDeptIcon {
       fill: #6aace2;
       width: 26px;
       height: 26px;
       padding: 4px;
     }
-    & .wtUserRoleGroupC {
+    .wtUserRoleGroupC {
       display: flex !important;
       margin-bottom: 10px;
       & > button {

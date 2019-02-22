@@ -57,11 +57,15 @@ export default {
         let result = {
           deptId: JSON.stringify(el),
           deptName: el.menuName,
-          groupMode: el.menuType === '1' || el.menuType === '2'
+          groupMode: el.menuType === '1' || el.menuType === '2',
+          jsonData: JSON.stringify(el)
         }
         Object.keys(el).forEach(key => {
           result[`_${key}`] = el[key]
         })
+        if (result._menuType === '4') {
+          result.deptId = Number(result._menuParam)
+        }
         return result
       })
     },
@@ -125,8 +129,8 @@ export default {
     },
     async contactsTreeLoad (data = {}) {
       let result = null
-      let { deptId, _deptType, _groupId, _slaveCorpDeptId, _menuParam } = data
-      if (deptId && /^{"/.test(deptId)) {
+      let { deptId, _deptType, _groupId, _slaveCorpDeptId, _menuParam, jsonData } = data
+      if (jsonData && /^{"/.test(jsonData)) {
         let { _api, _menuType, groupMode } = data
         if (groupMode && _api) {
           /* 处理常用联系人分组和下属单位列表 */

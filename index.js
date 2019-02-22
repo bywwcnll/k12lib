@@ -1,5 +1,6 @@
 import wisCell from './components/wisCell.vue'
 import wisContacts from './components/wisContacts.vue'
+import wisContactsPC from './components/wisContactsPC.vue'
 import wisDialog from './components/wisDialog.vue'
 import wisEditor from './components/wisEditor.vue'
 import wisImgFix from './components/wisImgFix.vue'
@@ -15,6 +16,7 @@ import wisWarning from './components/wisWarning.vue'
 export {
   wisCell,
   wisContacts,
+  wisContactsPC,
   wisDialog,
   wisEditor,
   wisImgFix,

@@ -1,7 +1,7 @@
 <template>
   <div class="comContainer_wsdu">
     <div class="deptUserC">
-      <template v-if="enableDept">
+      <template v-if="computedShowDeptFlag">
         <el-tag v-for="(el, index) in renderSelectedUserList" :key="index" size="medium"
         class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
       </template>
@@ -19,7 +19,7 @@
 
     <wisTree ref="wisTreeDom" :dialogVisible.sync="dialogVisible" :hideSearch="true"
       :deptIdsList.sync="selectedUserList" :title="title" :customTitle="customTitle"
-      :showAdvancedSearchFlag="showAdvancedSearchFlag" adSearchPlaceholder="按姓名和手机号搜索" :advancedLoad="handleAdvancedLoad"
+      :showAdvancedSearchFlag="showAdvancedSearchFlag && selectedType !== 1" adSearchPlaceholder="按姓名和手机号搜索" :advancedLoad="handleAdvancedLoad"
       :showTagListFlag="showTagListFlag" :tagList="tagList"
       :deptLoad="handleDeptLoad" :limit="limit" :parentMode="parentMode"
       @tagChange="handleTagChange"></wisTree>
@@ -44,6 +44,11 @@ export default {
         return {}
       }
     },
+    /* 选择类型： 0：部门和人员   1：部门   2：人员 */
+    selectedType: {
+      type: Number,
+      default: 0
+    },
     initDeptId: {
       type: String,
       default: ''
@@ -66,6 +71,7 @@ export default {
     },
     defaultDeptData: Array,
     limit: Number,
+    customTreeLoad: Function,
     customSearchLoad: Function,
     searchResFilter: Function,
     showAdvancedSearchFlag: Boolean,
@@ -92,6 +98,9 @@ export default {
     }
   },
   computed: {
+    computedShowDeptFlag () {
+      return this.enableDept || this.selectedType !== 2
+    },
     renderSelectedUserList () {
       if (this.parentMode) {
         return (this.selectedUserList || []).map(el => {
@@ -100,6 +109,15 @@ export default {
         })
       }
       return this.selectedUserList
+    },
+    computedDefaultData () {
+      return !this.contactsMode ? this.defaultDeptData : this.contactsDefaultData
+    },
+    computedCustomTreeLoad () {
+      return !this.contactsMode ? this.customTreeLoad : this.contactsTreeLoad
+    },
+    computedCustomSearchLoad () {
+      return !this.contactsMode ? this.customSearchLoad : this.contactsTreeSearch
     }
   },
   watch: {
@@ -115,16 +133,16 @@ export default {
     ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchDeptUserByKeyword', 'searchUserByKeyword']),
 
     async getAdvancedLoadRes (keyword) {
-      if (this.customSearchLoad) {
-        let customResult = await this.customSearchLoad(keyword)
+      if (this.computedCustomSearchLoad) {
+        let customResult = await this.computedCustomSearchLoad(keyword)
         return customResult
       }
-      if (this.defaultDeptData) {
-        if (this.defaultDeptData.length === 0) {
+      if (this.computedDefaultData) {
+        if (this.computedDefaultData.length === 0) {
           return []
         }
-        let deptIds = this.defaultDeptData.filter(el => !el.isUser).map(el => el.value).join(',')
-        let defaultUserList = this.defaultDeptData.filter(el => el.isUser).map(el => {
+        let deptIds = this.computedDefaultData.filter(el => !el.isUser).map(el => el.value).join(',')
+        let defaultUserList = this.computedDefaultData.filter(el => el.isUser).map(el => {
           el.userName = el.label
           el.userId = el.value
           delete el.label
@@ -166,7 +184,7 @@ export default {
     async handleAdvancedLoad (keyword) {
       let result = await this.getAdvancedLoadRes(keyword)
       return result.map(el => {
-        return {
+        let tmp = {
           label: el.userName,
           value: el.userId,
           mobile: el.mobile,
@@ -175,8 +193,12 @@ export default {
           subDeptNum: 0,
           isUser: true,
           pinyinName: el.pinyinName,
-          avatar: el.avatar
+          avatar: el.avatar,
         }
+        if (this.contactsMode) {
+          tmp.corpName = el.corpName
+        }
+        return tmp
       })
     },
     handleTagChange (v) {
@@ -197,24 +219,42 @@ export default {
       this.$refs.wisTreeDom.forceRenderTree()
     },
     async handleDeptLoad (node, resolve) {
-      if (this.defaultDeptData && !node.data) {
-        resolve(this.defaultDeptData)
+      let deptId = node.data && node.data.value ? node.data.value : (this.initDeptId ? this.initDeptId : -1)
+      if (this.computedDefaultData && !node.data) {
+        resolve(this.computedDefaultData)
         return
       }
-      let deptId = node.data && node.data.value ? node.data.value : (this.initDeptId ? this.initDeptId : -1)
+      if (+deptId === -1) {
+        if (this.computedDefaultData) {
+          resolve(this.computedDefaultData)
+          return
+        } else {
+          let contactsListResult = await this.refreshContactsList()
+          resolve(contactsListResult)
+          return
+        }
+      }
+      if (this.computedCustomTreeLoad) {
+        let customResult = await this.computedCustomTreeLoad(node.data, {
+          selectedType: this.selectedType
+        })
+        resolve(customResult)
+        return
+      }
       let subDeptNum = node.data && node.data.subDeptNum ? node.data.subDeptNum : 0
       if (subDeptNum > 0 || deptId === -1) {
-        let [subDeptRes, userRes] = await Promise.all([
-          this.listSubDeptByDeptId({ deptId, deptType: this._deptType }),
-          this.listUserByDeptId({ deptId, userType: this._userType })
-        ])
+        let subDeptRes = await this.listSubDeptByDeptId({ deptId, deptType: this._deptType })
+        let userRes = {}
+        if (this.selectedType === 0 || this.selectedType === 2) {
+          userRes = await this.listUserByDeptId({ deptId, userType: this._userType })
+        }
         let subDeptList = (subDeptRes.data || []).map(el => {
           return {
             label: el.deptName,
             value: el.deptId,
             subDeptNum: 1,
             pinyinName: el.pinyinName,
-            disabled: !this.enableDept
+            disabled: !this.computedShowDeptFlag
           }
         })
         let userList = (userRes.data || []).map(el => {
@@ -229,14 +269,18 @@ export default {
         })
         resolve([...subDeptList, ...userList])
       } else {
-        let userRes = await this.listUserByDeptId({ deptId })
+        let userRes = {}
+        if (this.selectedType === 0 || this.selectedType === 2) {
+          userRes = await this.listUserByDeptId({ deptId, userType: this._userType })
+        }
         resolve((userRes.data || []).map(el => {
           return {
             label: el.userName,
             value: el.userId,
             subDeptNum: 0,
             isUser: true,
-            pinyinName: el.pinyinName
+            pinyinName: el.pinyinName,
+            avatar: el.avatar
           }
         }))
       }
@@ -252,17 +296,17 @@ export default {
 
 <style scoped lang="scss">
   .comContainer_wsdu {
-    & .deptUserC {
+    .deptUserC {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
+      align-items: baseline;
       margin-top: 10px;
-      min-height: 30px;
-      & .deptUserImgC {
+      min-height: 34px;
+      .deptUserImgC {
         display: inline-block;
         margin-right: 5px;
         position: relative;
-        & .deptUserImg {
+        .deptUserImg {
           display: inline-block;
           width: 60px;
           height: 60px;
@@ -271,7 +315,7 @@ export default {
             display: block;
           }
         }
-        & .closeI {
+        .closeI {
           cursor: pointer;
           position: absolute;
           width: 18px;
@@ -289,7 +333,7 @@ export default {
           }
         }
       }
-      & .deptUserTag {
+      .deptUserTag {
         margin: 0 5px 5px 0;
       }
     }
