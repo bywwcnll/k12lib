@@ -1,7 +1,7 @@
 <template>
   <cell :title="title" is-link @click.native="onClick" :class="{hiddenCell: templateType !== 0}" :required="required"
         :valueAlign="valueAlign">
-    <div v-if="templateType === 0" ref="clampDom">
+    <div v-if="templateType === 0" ref="clampDom" class="clampCellValue">
       <span v-if="displayStr">{{displayStr}}</span>
       <span v-else-if="placeholder" class="placeholder">{{placeholder}}</span>
     </div>
@@ -16,7 +16,6 @@
 <script>
 import { mapActions } from 'vuex'
 import { Cell, K12Tree } from 'k12vux'
-import $clamp from 'clamp-js'
 
 export default {
   props: {
@@ -73,11 +72,7 @@ export default {
     K12Tree
   },
   created () {},
-  mounted () {
-    if (this.templateType === 0) {
-      $clamp(this.$refs.clampDom, {clamp: 1})
-    }
-  },
+  mounted () {},
   data () {
     return {
       k12TreeKey: 'k12Tree_' + Math.random() * 10 ** 16,
@@ -215,5 +210,13 @@ export default {
   }
   .placeholder {
     color: #ccc;
+  }
+  .clampCellValue {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-height: 20px;
   }
 </style>
