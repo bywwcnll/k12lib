@@ -18,11 +18,12 @@
     </div>
 
     <wisTree ref="wisTreeDom" :dialogVisible.sync="dialogVisible" :hideSearch="true"
-      :deptIdsList.sync="selectedUserList" :title="title" :customTitle="customTitle"
-      :showAdvancedSearchFlag="showAdvancedSearchFlag && selectedType !== 1" adSearchPlaceholder="按姓名和手机号搜索" :advancedLoad="handleAdvancedLoad"
-      :showTagListFlag="showTagListFlag" :tagList="tagList"
-      :deptLoad="handleDeptLoad" :limit="limit" :parentMode="parentMode"
-      @tagChange="handleTagChange"></wisTree>
+             :deptIdsList.sync="selectedUserList" :title="title" :customTitle="customTitle"
+             :showAdvancedSearchFlag="showAdvancedSearchFlag && selectedType !== 1" adSearchPlaceholder="按姓名和手机号搜索" :advancedLoad="handleAdvancedLoad"
+             :showTagListFlag="showTagListFlag" :tagList="tagList"
+             :deptLoad="handleDeptLoad" :limit="limit" :parentMode="parentMode"
+             @confirm="handleTreeConfirm"
+             @tagChange="handleTagChange"></wisTree>
   </div>
 </template>
 
@@ -184,21 +185,14 @@ export default {
     async handleAdvancedLoad (keyword) {
       let result = await this.getAdvancedLoadRes(keyword)
       return result.map(el => {
-        let tmp = {
+        return {
+          ...el,
           label: el.userName,
           value: el.userId,
-          mobile: el.mobile,
-          maskMobile: el.maskMobile,
-          deptNames: el.deptNames,
           subDeptNum: 0,
           isUser: true,
-          pinyinName: el.pinyinName,
-          avatar: el.avatar,
+          showDeptNames: true
         }
-        if (this.contactsMode) {
-          tmp.corpName = el.corpName
-        }
-        return tmp
       })
     },
     handleTagChange (v) {
@@ -238,7 +232,18 @@ export default {
         let customResult = await this.computedCustomTreeLoad(node.data, {
           selectedType: this.selectedType
         })
-        resolve(customResult)
+        if (customResult instanceof Array) {
+          resolve(customResult)
+        } else if (customResult.hasOwnProperty('data')) {
+          resolve((customResult.data || []).map(el => {
+            return {
+              ...el,
+              showDeptNames: customResult.showDeptNamesFlag
+            }
+          }))
+        } else {
+          resolve(customResult)
+        }
         return
       }
       let subDeptNum = node.data && node.data.subDeptNum ? node.data.subDeptNum : 0
@@ -289,6 +294,9 @@ export default {
       let tmp = [...this.selectedUserList]
       tmp.splice(index, 1)
       this.selectedUserList = tmp
+    },
+    handleTreeConfirm (data) {
+      this.$emit('confirm', data)
     }
   }
 }

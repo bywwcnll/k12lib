@@ -5,49 +5,96 @@ import wisK12TreeCell from './wisK12TreeCell'
 export default {
   extends: wisK12TreeCell,
   props: {
+    transValue: Object,
     contactsDefaultData: Array,
+    unTransValueData: Array,
     request: {
       type: Function,
       required: true
     }
   },
-  async created () {},
+  async created () {
+    await this.refreshTransValueData()
+  },
   mounted () {
     this.$on('confirm', (data = []) => {
       this.$emit('contactsConfirm', {
         data,
-        contactsUserAddParams: this.parseContactsData(data)
+        contactsUserAddParams: this.buildContactsDataUtil(data)
       })
+    })
+    this.$on('input', (data = []) => {
+      this.$emit('update:transValue', this.buildContactsDataUtil(data))
     })
   },
   data () {
     return {
-      contactsMode: true
+      contactsMode: true,
+      transValueData: null
     }
   },
   computed: {},
-  watch: {},
+  watch: {
+    unTransValueData (v) {
+      this.refreshTransValueData()
+    },
+    transValueData (v) {
+      if (v instanceof Array) {
+        this.selectedList = v
+      }
+    }
+  },
   filters: {},
   methods: {
     ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId']),
     ...mapActions('contacts', ['contactsUserPage']),
     ...mapActions('corpUser', ['userGetMyDepts']),
-    ...mapActions('corpUserSelect', ['userSelectMenuList', 'userSelectSearch']),
+    ...mapActions('corpUserSelect', ['userSelectMenuList', 'userSelectSearch', 'userSelectTranslate']),
 
-    parseContactsData (data = []) {
-      let selectedGroupIds = data.filter(el => el._groupId).map(el => el._groupId)
-      let selectedUserTypes = data.filter(el => el._menuType === '3').map(el => Number(el._menuParam))
-      let selectedDepIds = [
+    buildContactsDataUtil (data = []) {
+      let groupIds = data.filter(el => el._groupId).map(el => el._groupId)
+      let userTypes = data.filter(el => el._menuType === '3').map(el => Number(el._menuParam))
+      let deptIds = [
         ...data.filter(el => el._menuType === '4').map(el => Number(el._menuParam)),
         ...data.filter(el => el._slaveCorpDeptId).map(el => el._slaveCorpDeptId),
         ...data.filter(el => el.deptId && el.deptPath).map(el => el.deptId)
       ]
-      let selectedUserIds = data.filter(el => el.userId).map(el => el.userId)
+      let userIds = data.filter(el => el.userId).map(el => el.userId)
       return {
-        selectedGroupIds,
-        selectedUserTypes,
-        selectedDepIds,
-        selectedUserIds
+        groupIds,
+        userTypes,
+        deptIds,
+        userIds
+      }
+    },
+    async transGDUUtil (g, d, u) {
+      let res = await this.userSelectTranslate({
+        selectedGroupIds: (g || []).map(el => el.groupId),
+        selectedDepIds: (d || []).map(el => el.deptId),
+        selectedUserIds: (u || []).map(el => el.userId)
+      })
+      res.data = res.data || {}
+      g = res.data.groupList || []
+      d = res.data.deptList || []
+      u = res.data.userList || []
+      return [
+        ...(g || []).map(el => {
+          return {
+            ...el,
+            deptId: el.groupId,
+            deptName: el.groupName,
+            _groupId: el.groupId
+          }
+        }),
+        ...(d || []),
+        ...(u || [])
+      ]
+    },
+
+    async refreshTransValueData () {
+      let v = this.unTransValueData
+      if (v instanceof Array && v.length > 0) {
+        this.transValueData = await this.transGDUUtil.apply(null, v)
       }
     },
     async refreshContactsList () {
@@ -155,7 +202,10 @@ export default {
       /* 处理常用联系人分组用户列表 */
       if (_groupId) {
         let contactRes = await this.contactsUserPage({ groupId: _groupId, pageRequest: { pageNum: 1, pageSize: -1 } })
-        return contactRes.data && contactRes.data.rows ? contactRes.data.rows : []
+        return {
+          data: contactRes.data && contactRes.data.rows ? contactRes.data.rows : [],
+          showDeptNamesFlag: true
+        }
       }
       /* 处理下属单位用户列表 */
       if (_slaveCorpDeptId) {

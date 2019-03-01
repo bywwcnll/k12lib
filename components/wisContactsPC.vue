@@ -5,6 +5,7 @@
   const buildDept = (data = [], enableDept = false) => {
     return data.map(el => {
       return {
+        ...el,
         label: el.deptName,
         value: el.deptId,
         subDeptNum: 1,
@@ -13,14 +14,50 @@
       }
     })
   }
-  const buildUser = (data = []) => {
+  const buildUser = (data = [], extraAttrs = []) => {
     return data.map(el => {
-      return {
+      let tmp = {
+        ...el,
         label: el.userName,
         value: el.userId,
         subDeptNum: 0,
         isUser: true,
         pinyinName: el.pinyinName
+      }
+      extraAttrs.forEach(key => {
+        tmp[key] = el[key]
+      })
+      return tmp
+    })
+  }
+
+  const transDeptData = (data = [], isGroup = false) => {
+    return data.map(el => {
+      if (isGroup) {
+        return {
+          ...el,
+          label: el.groupName,
+          value: el.groupId,
+          _groupId: el.groupId
+        }
+      } else {
+        return {
+          ...el,
+          label: el.deptName,
+          value: el.deptId,
+          subDeptNum: 1
+        }
+      }
+    })
+  }
+  const transUserData = (data = []) => {
+    return data.map(el => {
+      return {
+        ...el,
+        isUser: true,
+        label: el.userName,
+        value: el.userId,
+        subDeptNum: 0
       }
     })
   }
@@ -28,49 +65,89 @@
   export default {
     extends: wisSelectDeptUser,
     props: {
+      transValue: Object,
       contactsDefaultData: Array,
+      unTransValueData: Array,
       request: {
         type: Function,
         required: true
       }
     },
-    async created () {},
+    async created () {
+      await this.refreshTransValueData()
+    },
     mounted () {
       this.$on('confirm', (data = []) => {
         this.$emit('contactsConfirm', {
           data,
-          contactsUserAddParams: this.parseContactsData(data)
+          contactsUserAddParams: this.buildContactsDataUtil(data)
         })
+      })
+      this.$on('update:value', (data = []) => {
+        this.$emit('update:transValue', this.buildContactsDataUtil(data))
       })
     },
     data () {
       return {
-        contactsMode: true
+        contactsMode: true,
+        transValueData: null
       }
     },
     computed: {},
-    watch: {},
+    watch: {
+      unTransValueData (v) {
+        this.refreshTransValueData()
+      },
+      transValueData (v) {
+        if (v instanceof Array) {
+          this.selectedUserList = v
+        }
+      }
+    },
     filters: {},
     methods: {
       ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId']),
       ...mapActions('contacts', ['contactsUserPage']),
       ...mapActions('corpUser', ['userGetMyDepts']),
-      ...mapActions('corpUserSelect', ['userSelectMenuList', 'userSelectSearch']),
+      ...mapActions('corpUserSelect', ['userSelectMenuList', 'userSelectSearch', 'userSelectTranslate']),
 
-      parseContactsData (data = []) {
-        let selectedGroupIds = data.filter(el => el._groupId).map(el => el._groupId)
-        let selectedUserTypes = data.filter(el => el._menuType === '3').map(el => Number(el._menuParam))
-        let selectedDepIds = [
+      buildContactsDataUtil (data = []) {
+        let groupIds = data.filter(el => el._groupId).map(el => el._groupId)
+        let userTypes = data.filter(el => el._menuType === '3').map(el => Number(el._menuParam))
+        let deptIds = [
           ...data.filter(el => el._menuType === '4').map(el => Number(el._menuParam)),
           ...data.filter(el => el._slaveCorpDeptId).map(el => el._slaveCorpDeptId),
           ...data.filter(el => el.subDeptNum && !el.hasOwnProperty('groupMode')).map(el => el.value)
         ]
-        let selectedUserIds = data.filter(el => el.isUser).map(el => el.value)
+        let userIds = data.filter(el => el.isUser).map(el => el.value)
         return {
-          selectedGroupIds,
-          selectedUserTypes,
-          selectedDepIds,
-          selectedUserIds
+          groupIds,
+          userTypes,
+          deptIds,
+          userIds
+        }
+      },
+      async transGDUUtil (g, d, u) {
+        let res = await this.userSelectTranslate({
+          selectedGroupIds: (g || []).map(el => el.groupId),
+          selectedDepIds: (d || []).map(el => el.deptId),
+          selectedUserIds: (u || []).map(el => el.userId)
+        })
+        res.data = res.data || {}
+        g = res.data.groupList || []
+        d = res.data.deptList || []
+        u = res.data.userList || []
+        return [
+          ...transDeptData(g || [], true),
+          ...transDeptData(d || []),
+          ...transUserData(u || [])
+        ]
+      },
+
+      async refreshTransValueData () {
+        let v = this.unTransValueData
+        if (v instanceof Array && v.length > 0) {
+          this.transValueData = await this.transGDUUtil.apply(null, v)
         }
       },
       async refreshContactsList () {
@@ -182,7 +259,10 @@
         /* 处理常用联系人分组用户列表 */
         if (_groupId) {
           let contactRes = await this.contactsUserPage({ groupId: _groupId, pageRequest: { pageNum: 1, pageSize: -1 } })
-          return buildUser(contactRes.data && contactRes.data.rows ? contactRes.data.rows : [])
+          return {
+            data: buildUser(contactRes.data && contactRes.data.rows ? contactRes.data.rows : [], ['deptNames', 'corpName']),
+            showDeptNamesFlag: true
+          }
         }
         /* 处理下属单位用户列表 */
         if (_slaveCorpDeptId) {

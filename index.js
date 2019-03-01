@@ -11,6 +11,7 @@ import wisSelectDeptUser from './components/wisSelectDeptUser.vue'
 import wisSimpleTree from './components/wisSimpleTree.vue'
 import wisSingleLineCalendar from './components/wisSingleLineCalendar.vue'
 import wisTree from './components/wisTree.vue'
+import wisTreeCell from './components/wisTreeCell.vue'
 import wisWarning from './components/wisWarning.vue'
 
 export {
@@ -27,5 +28,6 @@ export {
   wisSimpleTree,
   wisSingleLineCalendar,
   wisTree,
+  wisTreeCell,
   wisWarning,
 }
