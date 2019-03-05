@@ -7,6 +7,7 @@
         <span @click="wisDialogVisible = false" class="dialogTitleClose"><i class="el-icon-close"></i></span>
       </div>
       <slot></slot>
+      <slot name="footer" slot="footer"></slot>
     </el-dialog>
   </div>
 </template>
