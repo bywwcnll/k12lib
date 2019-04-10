@@ -1,6 +1,6 @@
 <template>
   <div class="comContainer_wisDialog">
-    <el-dialog :visible.sync="wisDialogVisible" :show-close="false" :width="width" :top="top"
+    <el-dialog :visible.sync="wisDialogVisible" :show-close="false" :width="width" :top="top" v-bind="attrs"
       custom-class="wisDialog">
       <div class="dialogTitleC" slot="title">
         <span class="title">{{title}}</span>
@@ -29,6 +29,12 @@ export default {
     top: {
       type: String,
       default: '15vh'
+    },
+    attrs: {
+      type: Object,
+      default () {
+        return {}
+      }
     }
   },
   created () {
