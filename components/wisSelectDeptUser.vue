@@ -222,7 +222,7 @@ export default {
         if (this.computedDefaultData) {
           resolve(this.computedDefaultData)
           return
-        } else {
+        } else if (this.refreshContactsList) {
           let contactsListResult = await this.refreshContactsList()
           resolve(contactsListResult)
           return
