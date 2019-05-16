@@ -5,7 +5,7 @@
       <span v-if="displayStr">{{displayStr}}</span>
       <span v-else-if="placeholder" class="placeholder">{{placeholder}}</span>
     </div>
-    <k12-tree ref="k12TreeDom" v-model="selectedList" :key="k12TreeKey" :show.sync="showTreeFlag" :load="onTreeLoad"
+    <k12-tree v-if="showK12TreeFlag" ref="k12TreeDom" v-model="selectedList" :key="k12TreeKey" :show.sync="showTreeFlag" :load="onTreeLoad"
               :defaultDeptId="defaultDeptId" :limit="limit" :onlySelectUser="selectedType === 2"
               :showSearch="selectedType !== 1" :searchLoad="onSearchLoad" :clearSearchValAfterConfirm="clearSearchValAfterConfirm"
               :parentMode="parentMode"
@@ -77,7 +77,8 @@ export default {
     return {
       k12TreeKey: 'k12Tree_' + Math.random() * 10 ** 16,
       showTreeFlag: this.show,
-      selectedList: [...this.value]
+      selectedList: [...this.value],
+      showK12TreeFlag: true
     }
   },
   computed: {
@@ -119,6 +120,12 @@ export default {
   methods: {
     ...mapActions('common', ['listSubDeptByDeptId', 'listUserByDeptId', 'searchDeptUserByKeyword', 'searchUserByKeyword']),
 
+    refresh () {
+      this.showK12TreeFlag = false
+      this.$nextTick(() => {
+        this.showK12TreeFlag = true
+      })
+    },
     onClick () {
       this.showTreeFlag = true
     },
