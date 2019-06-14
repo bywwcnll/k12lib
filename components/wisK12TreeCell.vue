@@ -221,9 +221,10 @@ export default {
   .clampCellValue {
     overflow: hidden;
     text-overflow: ellipsis;
-    -webkit-box-orient: vertical;
     display: -webkit-box;
-    -webkit-line-clamp: 1;
     line-height: 20px;
+    -webkit-line-clamp: 1;
+    /*! autoprefixer: ignore next */
+    -webkit-box-orient: vertical;
   }
 </style>
