@@ -94,6 +94,9 @@ export default {
           }
         }
       }
+      this.editorInstance.customConfig.onchange = (html) => {
+        this.$emit('change', html)
+      }
       this.editorInstance.create()
       this.$emit('update:editorInstance', this.editorInstance)
     },

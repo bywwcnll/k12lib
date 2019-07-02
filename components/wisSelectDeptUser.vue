@@ -1,9 +1,9 @@
 <template>
   <div class="comContainer_wsdu">
-    <div class="deptUserC">
-      <template v-if="computedShowDeptFlag">
+    <div v-if="!pureMode" class="deptUserC">
+      <template v-if="computedShowDeptFlag || userTagMode">
         <el-tag v-for="(el, index) in renderSelectedUserList" :key="index" size="medium"
-        class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
+                class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
       </template>
       <template v-else>
         <div v-for="(el, index) in renderSelectedUserList" :key="index" class="deptUserImgC">
@@ -54,10 +54,12 @@ export default {
       type: String,
       default: ''
     },
+    /* 部门类型： 1：行政部门   2：年级、班级部门 */
     deptType: {
       type: String,
       default: ''
     },
+    /* 用户类型： 1：教职工   2:学生   3:家长 */
     userType: {
       type: String,
       default: ''
@@ -78,13 +80,18 @@ export default {
     showAdvancedSearchFlag: Boolean,
     showTagListFlag: Boolean,
     tagList: Array,
-    parentMode: Boolean
+    parentMode: Boolean,
+    /* 强制将人员显示为tag标签模式 */
+    userTagMode: Boolean,
+    pureMode: Boolean,
+    show: Boolean
   },
   components: {
     [Tag.name]: Tag,
     wisTree
   },
   created () {
+    this.dialogVisible = this.show
     this.selectedUserList = this.value
     this._deptType = this.deptType
     this._userType = this.userType
@@ -122,6 +129,12 @@ export default {
     }
   },
   watch: {
+    show (v) {
+      this.dialogVisible = v
+    },
+    dialogVisible (v) {
+      this.$emit('update:show', v)
+    },
     value (v) {
       this.selectedUserList = v
     },

@@ -250,7 +250,7 @@
       },
       onFilterNode (value, data) {
         if (!value) return true
-        return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName || data.pinyinName.indexOf(value) !== -1)
+        return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName && data.pinyinName.indexOf(value) !== -1)
       },
       async onDeptLoad (node, resolve) {
         await this.deptLoad(node, (result) => {

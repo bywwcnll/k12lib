@@ -1,5 +1,5 @@
 <template>
-  <div :class="`comContainer_wisImgFix ${centerType}`">
+  <div ref="container" :class="`comContainer_wisImgFix ${centerType}`">
     <img v-if="show" :src="src" :style="imgStyle" alt="">
   </div>
 </template>
@@ -7,9 +7,7 @@
 <script>
 const getImgSize = (data) => {
   return new Promise((resolve, reject) => {
-    // console.log(data)
     let img = new Image()
-    img.src = data
     img.onload = () => {
       resolve({
         width: img.width,
@@ -19,46 +17,91 @@ const getImgSize = (data) => {
     img.onerror = e => {
       reject(e)
     }
+    img.src = data
   })
 }
 
 export default {
-  props: ['src'],
-  created () {
-    this.srcData = this.src
+  props: {
+    src: String,
+    /* 宽高比 w/h */
+    ratio: {
+      type: Number,
+      default: 1
+    },
+    auto: Boolean,
+    whiteSpace: Boolean
   },
-  mounted () {},
+  created () {},
+  mounted () {
+    this.computedRatio = this.ratio
+    if (this.auto) {
+      window.addEventListener('resize', this.onResize)
+      this.onResize()
+    } else {
+      this.refresh()
+    }
+  },
+  destroyed () {
+    if (this.auto) {
+      window.removeEventListener('resize', this.onResize)
+    }
+  },
   data () {
     return {
       show: false,
-      srcData: '',
+      computedRatio: 1,
       imgStyle: {},
       centerType: ''
     }
   },
   computed: {},
   watch: {
-    src (v) {
-      this.srcData = this.src
+    async src () {
+      this.refresh()
     },
-    async srcData (v) {
-      if (v) {
-        let {width, height} = await getImgSize(v)
-        if (width === height) {
-          this.imgStyle = {width: '100%', height: '100%'}
-        } else if (width > height) {
-          this.imgStyle = {height: '100%'}
-          this.centerType = 'horizontalCenter'
-        } else {
-          this.imgStyle = {width: '100%'}
-          this.centerType = 'verticalCenter'
-        }
-        this.show = true
-      }
+    ratio () {
+      this.computedRatio = this.ratio
+      this.refresh()
     }
   },
   filters: {},
-  methods: {}
+  methods: {
+    async refresh () {
+      if (this.src) {
+        let {width, height} = await getImgSize(this.src)
+        let currentRatio = width / height
+        if (currentRatio === this.computedRatio) {
+          this.imgStyle = {width: '100%', height: '100%'}
+        } else if (currentRatio > this.computedRatio) {
+          if (!this.whiteSpace) {
+            this.imgStyle = {height: '100%'}
+            this.centerType = 'horizontalCenter'
+          } else {
+            this.imgStyle = {width: '100%'}
+            this.centerType = 'verticalCenter'
+          }
+        } else {
+          if (!this.whiteSpace) {
+            this.imgStyle = {width: '100%'}
+            this.centerType = 'verticalCenter'
+          } else {
+            this.imgStyle = {height: '100%'}
+            this.centerType = 'horizontalCenter'
+          }
+        }
+        this.show = true
+      }
+    },
+    onResize () {
+      let parentElement = this.$refs.container.parentElement
+      // console.log(parentElement)
+      if (!parentElement) return
+      let { offsetWidth, offsetHeight } = parentElement
+      this.computedRatio = offsetWidth / offsetHeight
+      this.refresh()
+    }
+  }
 }
 </script>
 
