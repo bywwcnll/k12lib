@@ -75,18 +75,18 @@ export default {
           this.imgStyle = {width: '100%', height: '100%'}
         } else if (currentRatio > this.computedRatio) {
           if (!this.whiteSpace) {
-            this.imgStyle = {height: '100%'}
+            this.imgStyle = {height: '100%', width: 'auto'}
             this.centerType = 'horizontalCenter'
           } else {
-            this.imgStyle = {width: '100%'}
+            this.imgStyle = {width: '100%', height: 'auto'}
             this.centerType = 'verticalCenter'
           }
         } else {
           if (!this.whiteSpace) {
-            this.imgStyle = {width: '100%'}
+            this.imgStyle = {width: '100%', height: 'auto'}
             this.centerType = 'verticalCenter'
           } else {
-            this.imgStyle = {height: '100%'}
+            this.imgStyle = {height: '100%', width: 'auto'}
             this.centerType = 'horizontalCenter'
           }
         }
@@ -109,6 +109,7 @@ export default {
   .comContainer_wisImgFix {
     display: inline-block;
     overflow: hidden;
+    width: 100%;
     &.horizontalCenter {
       display: flex;
       justify-content: center;

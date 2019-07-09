@@ -65,7 +65,9 @@ export default {
       type: String,
       default: 'right'
     },
-    parentMode: Boolean
+    parentMode: Boolean,
+    keyId: String,
+    appCode: String
   },
   components: {
     Cell,
@@ -129,6 +131,13 @@ export default {
     onClick () {
       this.showTreeFlag = true
     },
+    wrapAppCodeAndKeyId (v = {}) {
+      let tmp = {...v}
+      let {keyId, appCode} = this
+      if (typeof keyId !== 'undefined') tmp.keyId = keyId
+      if (typeof appCode !== 'undefined') tmp.appCode = appCode
+      return tmp
+    },
     async onTreeLoad (data) {
       let { deptType, userType } = this
       let { deptId } = data
@@ -152,7 +161,7 @@ export default {
       let subDeptRes = await this.listSubDeptByDeptId({ deptId, deptType })
       let userRes = {}
       if (this.selectedType === 0 || this.selectedType === 2) {
-        userRes = await this.listUserByDeptId({ deptId, userType })
+        userRes = await this.listUserByDeptId(this.wrapAppCodeAndKeyId({ deptId, userType }))
       }
       let deptList = subDeptRes.data || []
       let userList = userRes.data || []
@@ -176,12 +185,12 @@ export default {
         let deptIds = this.computedDefaultData.filter(el => el.deptId && !el.userId).map(el => el.deptId).join(',')
         let defaultUserList = this.computedDefaultData.filter(el => !el.deptId && el.userId)
         if (deptIds.length > 0) {
-          let searchDeptUserRes = await this.searchDeptUserByKeyword({
+          let searchDeptUserRes = await this.searchDeptUserByKeyword(this.wrapAppCodeAndKeyId({
             corpId: window.corpId,
             keyword,
             userType: this.userType,
             deptIds
-          })
+          }))
           let searchFilterResult = searchDeptUserRes.data || []
           if (this.searchResFilter) {
             searchFilterResult = this.searchResFilter(searchFilterResult)
@@ -200,11 +209,11 @@ export default {
             (el.mobile || '').indexOf(keyword) > -1
         })
       }
-      let res = await this.searchUserByKeyword({
+      let res = await this.searchUserByKeyword(this.wrapAppCodeAndKeyId({
         corpId: window.corpId,
         keyword,
         userType: this.userType
-      })
+      }))
       return (res.data || [])
     }
   }
