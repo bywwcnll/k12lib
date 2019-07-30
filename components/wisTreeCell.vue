@@ -1,5 +1,6 @@
 <template>
   <div class="wtComContainer">
+    <span v-if="renderMode && data.isUser && data.disabled" style="display: flex;align-items: center;margin-right: 8px;" class="el-checkbox__input is-disabled is-checked"><span class="el-checkbox__inner"></span><input type="checkbox" disabled="disabled" class="el-checkbox__original" value=""></span>
     <div v-if="data.isUser || !renderMode" class="wtDeptIcon">
       <svg v-if="data.isUser" viewBox="0 0 1024 1024">
         <path d="M690.338 661.474c-41.498-18.374-103.937-65.868-195.163-82.197 23.332-24.985 40.564-63.996 58.672-110.231 10.528-26.786 8.425-49.62 8.425-82.185 0-24.002 4.507-62.528-1.502-83.71-20.073-71.577-71.002-91.29-130.507-91.29-59.583 0-110.473 19.828-130.557 91.452-5.848 21.24-1.355 59.627-1.355 83.548 0 32.623-1.764 55.56 8.787 82.359 18.247 46.477 35.683 85.444 58.865 110.347-90.428 16.525-148.928 63.73-190.16 82.047-85.32 38.11-83.219 79.828-83.219 79.828v70.698l685.644-0.128v-70.57c0-0.001-2.262-41.88-87.93-79.968zM659.56 227.805h271.187v59.352H659.56v-59.352zM659.56 357.765h165.782v60.375H659.56v-60.375z"/>

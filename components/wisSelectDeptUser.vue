@@ -3,7 +3,7 @@
     <div v-if="!pureMode" class="deptUserC">
       <template v-if="computedShowDeptFlag || userTagMode">
         <el-tag v-for="(el, index) in renderSelectedUserList" :key="index" size="medium"
-                class="deptUserTag" type="info" closable @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
+                class="deptUserTag" type="info" :closable="!el.disabled" @close="handleRemoveUserTag(index)">{{el.label}}</el-tag>
       </template>
       <template v-else>
         <div v-for="(el, index) in renderSelectedUserList" :key="index" class="deptUserImgC">

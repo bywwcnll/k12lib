@@ -48,7 +48,7 @@
           <div class="wtSelectedName">{{resultTitleTxt}}</div>
           <div class="wtSelectedC">
             <div v-for="(el, index) in checkedDeptList" :key="index" class="wtSelectedCell">
-              <wisTreeCell :data="el" :index="index" showDeptNames showCloseBtn @close="onRemoveDept"></wisTreeCell>
+              <wisTreeCell :data="el" :index="index" showDeptNames :showCloseBtn="!el.disabled" @close="onRemoveDept"></wisTreeCell>
             </div>
           </div>
         </div>
@@ -257,6 +257,13 @@
           if (this.parentMode && result) {
             result = result.map(el => {
               if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
+              return el
+            })
+          }
+          if (this.checkedDeptList && result) {
+            let disabledList = (this.checkedDeptList || []).filter(el => el.value && el.disabled).map(el => el.value)
+            result = (result || []).map(el => {
+              if (disabledList.indexOf(el.value) > -1) el.disabled = true
               return el
             })
           }
