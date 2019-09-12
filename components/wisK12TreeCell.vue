@@ -53,8 +53,14 @@ export default {
     customSearchLoad: Function,
     searchResFilter: Function,
     clearSearchValAfterConfirm: Boolean,
-    deptType: String,
-    userType: String,
+    deptType: {
+      type: String,
+      default: ''
+    },
+    userType: {
+      type: String,
+      default: ''
+    },
     show: Boolean,
     placeholder: {
       type: String,
@@ -203,11 +209,15 @@ export default {
             uniqUserList.push(el)
           }
         })
-        return uniqUserList.filter(el => {
-          return (el.userName || '').indexOf(keyword) > -1 ||
-            (el.pinyinName || '').indexOf(keyword) > -1 ||
-            (el.mobile || '').indexOf(keyword) > -1
+        let resultList = []
+        keyword.replace(/(,|，|、)/g, ' ').split(/ +/).forEach(e => {
+          resultList = resultList.concat(uniqUserList.filter(i => {
+            return (i.userName || '').indexOf(e) > -1 ||
+              (i.pinyinName || '').indexOf(e) > -1 ||
+              (i.mobile || '').indexOf(e) > -1
+          }))
         })
+        return resultList
       }
       let res = await this.searchUserByKeyword(this.wrapAppCodeAndKeyId({
         corpId: window.corpId,

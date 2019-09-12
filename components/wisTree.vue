@@ -62,289 +62,289 @@
 </template>
 
 <script>
-  import { Button, ButtonGroup, Dialog, Input, Tree } from 'element-ui'
-  import { debounce, isEmpty } from 'lodash'
-  import wisTreeCell from './wisTreeCell'
+import { Button, ButtonGroup, Dialog, Input, Tree } from 'element-ui'
+import { debounce, isEmpty } from 'lodash'
+import wisTreeCell from './wisTreeCell'
 
-  export default {
-    components: {
-      [Button.name]: Button,
-      [ButtonGroup.name]: ButtonGroup,
-      [Dialog.name]: Dialog,
-      [Input.name]: Input,
-      [Tree.name]: Tree,
-      wisTreeCell
+export default {
+  components: {
+    [Button.name]: Button,
+    [ButtonGroup.name]: ButtonGroup,
+    [Dialog.name]: Dialog,
+    [Input.name]: Input,
+    [Tree.name]: Tree,
+    wisTreeCell
+  },
+  props: {
+    title: {
+      type: String,
+      default: '部门/班级'
     },
-    props: {
-      title: {
-        type: String,
-        default: '部门/班级'
-      },
-      customTitle: {
-        type: Object,
-        // validator: function (value) {
-        //   return !isEmpty(value) && value.title && value.resultTitle
-        // },
-        default () {
-          return {}
-        }
-      },
-      showType: {
-        type: String,
-        default: 'lazy'
-      },
-      /* 部门过滤性的搜索 */
-      hideSearch: {
-        type: Boolean,
-        default: false
-      },
-      searchPlaceholder: {
-        type: String,
-        default: '搜索部门'
-      },
-      hideDisabledCheckbox: {
-        type: Boolean,
-        default: true
-      },
-      allData: {
-        type: Array,
-        default: () => []
-      },
-      dialogVisible: {
-        type: Boolean,
-        default: false
-      },
-      deptIdsList: {
-        type: Array,
-        default: () => []
-      },
-      deptProps: {
-        default: () => {
-          return {
-            label: 'label',
-            isLeaf: (data, node) => {
-              return data.subDeptNum <= 0
-            }
+    customTitle: {
+      type: Object,
+      // validator: function (value) {
+      //   return !isEmpty(value) && value.title && value.resultTitle
+      // },
+      default () {
+        return {}
+      }
+    },
+    showType: {
+      type: String,
+      default: 'lazy'
+    },
+    /* 部门过滤性的搜索 */
+    hideSearch: {
+      type: Boolean,
+      default: false
+    },
+    searchPlaceholder: {
+      type: String,
+      default: '搜索部门'
+    },
+    hideDisabledCheckbox: {
+      type: Boolean,
+      default: true
+    },
+    allData: {
+      type: Array,
+      default: () => []
+    },
+    dialogVisible: {
+      type: Boolean,
+      default: false
+    },
+    deptIdsList: {
+      type: Array,
+      default: () => []
+    },
+    deptProps: {
+      default: () => {
+        return {
+          label: 'label',
+          isLeaf: (data, node) => {
+            return data.subDeptNum <= 0
           }
         }
-      },
-      deptLoad: Function,
-      limit: Number,
+      }
+    },
+    deptLoad: Function,
+    limit: Number,
 
-      showAdvancedSearchFlag: Boolean,
-      adSearchPlaceholder: {
-        type: String,
-        default: '搜索'
-      },
-      advancedLoad: Function,
-      showTagListFlag: Boolean,
-      tagList: {
-        type: Array,
-        default () {
-          return ['教职工', '学生', '家长']
-        }
-      },
-      parentMode: Boolean
+    showAdvancedSearchFlag: Boolean,
+    adSearchPlaceholder: {
+      type: String,
+      default: '搜索'
     },
-    created () {},
-    mounted () {
-      if (this.showTagListFlag && !isEmpty(this.tagList)) {
-        this.activeTag = this.tagList[0]
-      }
-      if (this.showType === 'all' && !isEmpty(this.allData) && !this.allData[0].isUser) {
-        this.defaultExpandedKeys = [this.allData[0].value]
+    advancedLoad: Function,
+    showTagListFlag: Boolean,
+    tagList: {
+      type: Array,
+      default () {
+        return ['教职工', '学生', '家长']
       }
     },
-    data () {
-      return {
-        loadedCounts: 0,
-        isEmpty,
-        showElTreeFlag: true,
-        deptDialogVisible: false,
-        searchValue: '',
-        activeTag: '',
-        defaultCheckedKeys: [],
-        checkedDeptList: [],
+    parentMode: Boolean
+  },
+  created () {},
+  mounted () {
+    if (this.showTagListFlag && !isEmpty(this.tagList)) {
+      this.activeTag = this.tagList[0]
+    }
+    if (this.showType === 'all' && !isEmpty(this.allData) && !this.allData[0].isUser) {
+      this.defaultExpandedKeys = [this.allData[0].value]
+    }
+  },
+  data () {
+    return {
+      loadedCounts: 0,
+      isEmpty,
+      showElTreeFlag: true,
+      deptDialogVisible: false,
+      searchValue: '',
+      activeTag: '',
+      defaultCheckedKeys: [],
+      checkedDeptList: [],
 
-        advancedSearchValue: '',
-        advancedSearchList: [],
-        defaultExpandedKeys: []
-      }
+      advancedSearchValue: '',
+      advancedSearchList: [],
+      defaultExpandedKeys: []
+    }
+  },
+  computed: {
+    titleTxt () {
+      return isEmpty(this.customTitle) ? '选择' + this.title : this.customTitle.title
     },
-    computed: {
-      titleTxt () {
-        return isEmpty(this.customTitle) ? '选择' + this.title : this.customTitle.title
-      },
-      resultTitleTxt () {
-        return isEmpty(this.customTitle) ? '已选择的' + this.title : this.customTitle.resultTitle
-      }
-    },
-    watch: {
-      dialogVisible (v) {
-        this.deptDialogVisible = v
-        if (v) {
-          this.deptDialogVisible = this.dialogVisible
-          this.searchValue = ''
-          this.checkedDeptList = [...this.deptIdsList]
-          this.defaultCheckedKeys = this.checkedDeptList.map(el => el.value)
+    resultTitleTxt () {
+      return isEmpty(this.customTitle) ? '已选择的' + this.title : this.customTitle.resultTitle
+    }
+  },
+  watch: {
+    dialogVisible (v) {
+      this.deptDialogVisible = v
+      if (v) {
+        this.deptDialogVisible = this.dialogVisible
+        this.searchValue = ''
+        this.checkedDeptList = [...this.deptIdsList]
+        this.defaultCheckedKeys = this.checkedDeptList.map(el => el.value)
 
-          this.$nextTick(() => {
-            this.defaultCheckedKeys.forEach(el => {
-              this.$refs.wtDeptsTree.setChecked(el, true)
-            })
-            let currentCheckedKeys = this.$refs.wtDeptsTree.getCheckedKeys() || []
-            let willUnCheckedList = currentCheckedKeys.filter(el => this.defaultCheckedKeys.indexOf(el) === -1)
-            willUnCheckedList.forEach(el => {
-              this.$refs.wtDeptsTree.setChecked(el, false)
-            })
+        this.$nextTick(() => {
+          this.defaultCheckedKeys.forEach(el => {
+            this.$refs.wtDeptsTree.setChecked(el, true)
           })
-        }
-      },
-      deptDialogVisible (v) {
-        this.$emit('update:dialogVisible', v)
-      },
-      searchValue (v) {
-        // console.log(Object.keys(this.$refs.wtDeptsTree.store.nodesMap))
-        this.$refs.wtDeptsTree.filter(v)
-      },
-      advancedSearchValue (v) {
-        this.doAdvancedSearch()
-      },
-      activeTag (v) {
-        this.$emit('tagChange', v)
-        this.$nextTick(async () => {
-          if (this.advancedSearchValue) {
-            await this.doAdvancedSearch()
-          }
+          let currentCheckedKeys = this.$refs.wtDeptsTree.getCheckedKeys() || []
+          let willUnCheckedList = currentCheckedKeys.filter(el => this.defaultCheckedKeys.indexOf(el) === -1)
+          willUnCheckedList.forEach(el => {
+            this.$refs.wtDeptsTree.setChecked(el, false)
+          })
         })
-      },
-      allData (v) {
-        if (this.showType === 'all' && !isEmpty(v)) {
-          this.defaultExpandedKeys = [v[0].value]
-        }
       }
     },
-    filters: {},
-    methods: {
-      doAdvancedSearch: debounce(async function () {
-        if (!this.advancedSearchValue) {
-          this.advancedSearchList = []
-          return
+    deptDialogVisible (v) {
+      this.$emit('update:dialogVisible', v)
+    },
+    searchValue (v) {
+      // console.log(Object.keys(this.$refs.wtDeptsTree.store.nodesMap))
+      this.$refs.wtDeptsTree.filter(v)
+    },
+    advancedSearchValue (v) {
+      this.doAdvancedSearch()
+    },
+    activeTag (v) {
+      this.$emit('tagChange', v)
+      this.$nextTick(async () => {
+        if (this.advancedSearchValue) {
+          await this.doAdvancedSearch()
         }
-        let result = await this.advancedLoad(this.advancedSearchValue)
+      })
+    },
+    allData (v) {
+      if (this.showType === 'all' && !isEmpty(v)) {
+        this.defaultExpandedKeys = [v[0].value]
+      }
+    }
+  },
+  filters: {},
+  methods: {
+    doAdvancedSearch: debounce(async function () {
+      if (!this.advancedSearchValue) {
+        this.advancedSearchList = []
+        return
+      }
+      let result = await this.advancedLoad(this.advancedSearchValue)
+      if (this.parentMode && result) {
+        result = result.map(el => {
+          if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
+          return el
+        })
+      }
+      this.advancedSearchList = result
+    }, 500),
+    forceRenderTree () {
+      this.showElTreeFlag = false
+      this.$nextTick(() => {
+        this.showElTreeFlag = true
+      })
+    },
+    onDialogClose () {
+    },
+    onFilterNode (value, data) {
+      if (!value) return true
+      return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName && data.pinyinName.indexOf(value) !== -1)
+    },
+    async onDeptLoad (node, resolve) {
+      await this.deptLoad(node, (result) => {
         if (this.parentMode && result) {
           result = result.map(el => {
             if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
             return el
           })
         }
-        this.advancedSearchList = result
-      }, 500),
-      forceRenderTree () {
-        this.showElTreeFlag = false
-        this.$nextTick(() => {
-          this.showElTreeFlag = true
-        })
-      },
-      onDialogClose () {
-      },
-      onFilterNode (value, data) {
-        if (!value) return true
-        return (data.label && data.label.indexOf(value) !== -1) || (data.pinyinName && data.pinyinName.indexOf(value) !== -1)
-      },
-      async onDeptLoad (node, resolve) {
-        await this.deptLoad(node, (result) => {
-          if (this.parentMode && result) {
-            result = result.map(el => {
-              if (el.isUser && !/的家长$/.test(el.label)) el.label += '的家长'
-              return el
-            })
-          }
-          if (this.checkedDeptList && result) {
-            let disabledList = (this.checkedDeptList || []).filter(el => el.value && el.disabled).map(el => el.value)
-            result = (result || []).map(el => {
-              if (disabledList.indexOf(el.value) > -1) el.disabled = true
-              return el
-            })
-          }
-          resolve(result)
-        })
-        this.loadedCounts++
-        if (this.$refs.wtDeptsTree) {
-          let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()
-          halfCheckedKeys.forEach(el => {
-            this.$refs.wtDeptsTree.setChecked(el, false)
+        if (this.checkedDeptList && result) {
+          let disabledList = (this.checkedDeptList || []).filter(el => el.value && el.disabled).map(el => el.value)
+          result = (result || []).map(el => {
+            if (disabledList.indexOf(el.value) > -1) el.disabled = true
+            return el
           })
         }
-        if (this.loadedCounts < 2) {
-          this.$nextTick(() => {
-            let firstNode = this.$refs.wtDeptsTree.root.childNodes[0]
-            if (firstNode && !firstNode.data.isUser) {
-              this.defaultExpandedKeys = [this.$refs.wtDeptsTree.root.childNodes[0].data.value]
-            }
-          })
-        }
-      },
-      onTreeChange (data, checked) {
-        if ((!data.value && data.value !== 0) || data.disabled) {
-          return
-        }
-        let deptIndex = this.checkedDeptList.map(el => el.value).indexOf(data.value)
-        if (checked) {
-          if (deptIndex === -1) {
-            if (this.limit === 0) {
-              this.checkedDeptList.forEach(el => {
-                this.$refs.wtDeptsTree.setChecked(el.value, false)
-              })
-              this.$refs.wtDeptsTree.setChecked(data.value, false)
-              if (this.$wisToast) {
-                this.$wisToast(`限制选择数量为${this.limit}`, 'warning')
-              }
-              return
-            } else if (this.limit > 0) {
-              if (this.limit === 1) {
-                if (this.$refs.wtDeptsTree) {
-                  this.checkedDeptList.forEach(el => {
-                    this.$refs.wtDeptsTree.setChecked(el.value, false)
-                  })
-                  this.$refs.wtDeptsTree.setChecked(data.value, true)
-                }
-                this.checkedDeptList = [data]
-              } else if (this.limit > this.checkedDeptList.length) {
-                this.checkedDeptList.push(data)
-              } else {
-                if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
-                if (this.$wisToast) {
-                  this.$wisToast(`最多选择${this.limit}个`, 'warning')
-                }
-              }
-            } else {
-              this.checkedDeptList.push(data)
-            }
-          }
-        } else {
-          if (deptIndex > -1) {
-            if (this.limit !== 1) {
-              this.checkedDeptList.splice(deptIndex, 1)
-            } else {
-              if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, true)
-            }
-          }
-        }
-      },
-      onRemoveDept ({ data, index }) {
-        this.checkedDeptList.splice(index, 1)
-        this.$nextTick(() => {
-          if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
+        resolve(result)
+      })
+      this.loadedCounts++
+      if (this.$refs.wtDeptsTree) {
+        let halfCheckedKeys = this.$refs.wtDeptsTree.getHalfCheckedKeys()
+        halfCheckedKeys.forEach(el => {
+          this.$refs.wtDeptsTree.setChecked(el, false)
         })
-      },
-      onConfirm () {
-        this.$emit('update:deptIdsList', [...this.checkedDeptList])
-        this.$emit('confirm', this.checkedDeptList)
-        this.deptDialogVisible = false
       }
+      if (this.loadedCounts < 2) {
+        this.$nextTick(() => {
+          let firstNode = this.$refs.wtDeptsTree.root.childNodes[0]
+          if (firstNode && !firstNode.data.isUser) {
+            this.defaultExpandedKeys = [this.$refs.wtDeptsTree.root.childNodes[0].data.value]
+          }
+        })
+      }
+    },
+    onTreeChange (data, checked) {
+      if ((!data.value && data.value !== 0) || data.disabled) {
+        return
+      }
+      let deptIndex = this.checkedDeptList.map(el => el.value).indexOf(data.value)
+      if (checked) {
+        if (deptIndex === -1) {
+          if (this.limit === 0) {
+            this.checkedDeptList.forEach(el => {
+              this.$refs.wtDeptsTree.setChecked(el.value, false)
+            })
+            this.$refs.wtDeptsTree.setChecked(data.value, false)
+            if (this.$wisToast) {
+              this.$wisToast(`限制选择数量为${this.limit}`, 'warning')
+            }
+            return
+          } else if (this.limit > 0) {
+            if (this.limit === 1) {
+              if (this.$refs.wtDeptsTree) {
+                this.checkedDeptList.forEach(el => {
+                  this.$refs.wtDeptsTree.setChecked(el.value, false)
+                })
+                this.$refs.wtDeptsTree.setChecked(data.value, true)
+              }
+              this.checkedDeptList = [data]
+            } else if (this.limit > this.checkedDeptList.length) {
+              this.checkedDeptList.push(data)
+            } else {
+              if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
+              if (this.$wisToast) {
+                this.$wisToast(`最多选择${this.limit}个`, 'warning')
+              }
+            }
+          } else {
+            this.checkedDeptList.push(data)
+          }
+        }
+      } else {
+        if (deptIndex > -1) {
+          if (this.limit !== 1) {
+            this.checkedDeptList.splice(deptIndex, 1)
+          } else {
+            if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, true)
+          }
+        }
+      }
+    },
+    onRemoveDept ({ data, index }) {
+      this.checkedDeptList.splice(index, 1)
+      this.$nextTick(() => {
+        if (this.$refs.wtDeptsTree) this.$refs.wtDeptsTree.setChecked(data.value, false)
+      })
+    },
+    onConfirm () {
+      this.$emit('update:deptIdsList', [...this.checkedDeptList])
+      this.$emit('confirm', this.checkedDeptList)
+      this.deptDialogVisible = false
     }
   }
+}
 </script>
 
 <style lang="scss">

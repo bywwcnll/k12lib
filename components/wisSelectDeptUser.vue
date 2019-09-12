@@ -30,8 +30,8 @@
 <script>
 import { mapActions } from 'vuex'
 import { Tag } from 'element-ui'
-
-const wisTree = () => import('./wisTree.vue')
+import wisTree from './wisTree.vue'
+import { cloneDeep } from 'lodash'
 
 export default {
   props: {
@@ -157,11 +157,12 @@ export default {
         }
         let deptIds = this.computedDefaultData.filter(el => !el.isUser).map(el => el.value).join(',')
         let defaultUserList = this.computedDefaultData.filter(el => el.isUser).map(el => {
-          el.userName = el.label
-          el.userId = el.value
-          delete el.label
-          delete el.value
-          return el
+          let tmp = cloneDeep(el)
+          tmp.userName = tmp.label
+          tmp.userId = tmp.value
+          delete tmp.label
+          delete tmp.value
+          return tmp
         })
         if (deptIds.length > 0) {
           let searchDeptUserRes = await this.searchDeptUserByKeyword({
@@ -328,13 +329,10 @@ export default {
         margin-right: 5px;
         position: relative;
         .deptUserImg {
-          display: inline-block;
+          display: block;
           width: 60px;
           height: 60px;
           box-shadow: 3px 3px 6px #ddd;
-          & > img {
-            display: block;
-          }
         }
         .closeI {
           cursor: pointer;
