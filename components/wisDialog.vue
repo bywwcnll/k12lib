@@ -1,7 +1,27 @@
 <template>
   <div class="comContainer_wisDialog">
-    <el-dialog :visible.sync="wisDialogVisible" :show-close="false" :width="width" :top="top" v-bind="attrs"
-      custom-class="wisDialog">
+    <el-dialog v-if="draggable"
+               v-el-draggable-dialog
+               :visible.sync="wisDialogVisible"
+               :show-close="false"
+               :width="width"
+               :top="top"
+               v-bind="attrs"
+               custom-class="wisDialog">
+      <div class="dialogTitleC" slot="title">
+        <span class="title">{{title}}</span>
+        <span @click="wisDialogVisible = false" class="dialogTitleClose"><i class="el-icon-close"></i></span>
+      </div>
+      <slot></slot>
+      <slot name="footer" slot="footer"></slot>
+    </el-dialog>
+    <el-dialog v-else
+               :visible.sync="wisDialogVisible"
+               :show-close="false"
+               :width="width"
+               :top="top"
+               v-bind="attrs"
+               custom-class="wisDialog">
       <div class="dialogTitleC" slot="title">
         <span class="title">{{title}}</span>
         <span @click="wisDialogVisible = false" class="dialogTitleClose"><i class="el-icon-close"></i></span>
@@ -35,6 +55,10 @@ export default {
       default () {
         return {}
       }
+    },
+    draggable: {
+      type: Boolean,
+      default: true
     }
   },
   created () {

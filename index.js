@@ -1,3 +1,4 @@
+import dialogDraggable from './components/dialogDraggable'
 import mixinsSAFList from './components/mixinsSAFList'
 import wisCell from './components/wisCell.vue'
 import wisContacts from './components/wisContacts.vue'
@@ -17,6 +18,7 @@ import wisTreeCell from './components/wisTreeCell.vue'
 import wisWarning from './components/wisWarning.vue'
 
 export {
+  dialogDraggable,
   mixinsSAFList,
   wisCell,
   wisContacts,
