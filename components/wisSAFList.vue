@@ -21,7 +21,7 @@
         <img @click="onResetFilter" :src="closeIcon" class="filterCloseImg"/>
       </div>
     </div>
-    <div class="infiniteListC">
+    <div ref="infiniteListCDom" class="infiniteListC">
       <div v-infinite-scroll="loadMore"
            infinite-scroll-disabled="isLoading"
            infinite-scroll-distance="10"

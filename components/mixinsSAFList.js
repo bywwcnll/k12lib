@@ -83,7 +83,18 @@ export default {
       this.recordListData = { ...recordListDataInitData }
       this.recordListRows = []
     },
+    getInfiniteListCDom () {
+      let childrenList = this.$children || []
+      for (let i = 0; i < childrenList.length; i++) {
+        let { className } = childrenList[i].$el || {}
+        if ((className || '').indexOf('comContainer_wisSAFList') > -1) {
+          return (childrenList[i].$refs || {}).infiniteListCDom
+        }
+      }
+    },
     async getRecordList (exeLoading = true, extraParams = {}) {
+      let element = this.getInfiniteListCDom() || {}
+      if (element && element.scrollTop > 0 && isEmpty(this.recordListRows)) return
       if (exeLoading) this.$wisLoading(true)
       let { recordListData, filterParamsObj } = this
       let { pageNum, pageSize } = recordListData
