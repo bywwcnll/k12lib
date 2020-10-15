@@ -16,7 +16,8 @@ export default {
   data () {
     return {
       showFilterFlag: false,
-      
+  
+      safKeyWord: '',
       isLoading: false,
       recordListData: {...recordListDataInitData},
       recordListRows: []
@@ -69,7 +70,8 @@ export default {
       this.isLoading = false
       if (flag) {
         this.resetListData()
-        this.getRecordList(true, { keyWord: v })
+        this.safKeyWord = v
+        this.getRecordList()
       }
     },
     async refreshList () {
@@ -80,6 +82,7 @@ export default {
     },
     
     resetListData () {
+      this.safKeyWord = ''
       this.recordListData = { ...recordListDataInitData }
       this.recordListRows = []
     },
@@ -106,6 +109,7 @@ export default {
         ...filterParamsObj,
         ...extraParams
       }
+      if (this.safKeyWord) params.keyWord = this.safKeyWord
       let res = await this.commonListRequest(params)
       if (res.data) {
         res.data.pageNum += 1
