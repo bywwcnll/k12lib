@@ -34,7 +34,8 @@ export default {
       type: Array,
       default: () => []
     },
-    limit: Number
+    limit: Number,
+    defaultAllDeptData: Array
   },
   components: {
     [Tag.name]: Tag,
@@ -66,15 +67,16 @@ export default {
 
     async handleLoadAllDeptData () {
       if (this.allDeptData && this.allDeptData.length > 0) {
-        this.dialogVisible = true
+      } if (this.defaultAllDeptData) {
+        this.allDeptData = this.defaultAllDeptData
       } else {
         let res = await this.listAllDept({
           /* 部门类型，1：行政部门；2：年级、班级部门；参数不传是查询全部 */
           deptType: this.deptType
         })
         this.allDeptData = mapDeptData((res.data || []))
-        this.dialogVisible = true
       }
+      this.dialogVisible = true
     },
     handleRemoveDeptTag (index) {
       let tmp = [...this.selectedDeptList]
