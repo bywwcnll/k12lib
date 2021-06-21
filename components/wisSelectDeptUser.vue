@@ -75,6 +75,7 @@ export default {
     defaultDeptData: Array,
     limit: Number,
     customTreeLoad: Function,
+    customUserLoad: Function,
     customSearchLoad: Function,
     searchResFilter: Function,
     showAdvancedSearchFlag: Boolean,
@@ -263,10 +264,6 @@ export default {
       let subDeptNum = node.data && node.data.subDeptNum ? node.data.subDeptNum : 0
       if (subDeptNum > 0 || deptId === -1) {
         let subDeptRes = await this.listSubDeptByDeptId({ deptId, deptType: this._deptType })
-        let userRes = {}
-        if (this.selectedType === 0 || this.selectedType === 2) {
-          userRes = await this.listUserByDeptId({ deptId, userType: this._userType })
-        }
         let subDeptList = (subDeptRes.data || []).map(el => {
           return {
             label: el.deptName,
@@ -276,7 +273,21 @@ export default {
             disabled: !this.computedShowDeptFlag
           }
         })
-        let userList = (userRes.data || []).map(el => {
+        let userList = await this.getUserList(deptId)
+        resolve([...subDeptList, ...userList])
+      } else {
+        let userList = await this.getUserList(deptId)
+        resolve(userList)
+      }
+    },
+    async getUserList (deptId) {
+      let params = { deptId, userType: this._userType }
+      let userList = []
+      if (this.customUserLoad) {
+        userList = await this.customUserLoad(params)
+      } else if (this.selectedType === 0 || this.selectedType === 2) {
+        let userRes = await this.listUserByDeptId(params)
+        userList = (userRes.data || []).map(el => {
           return {
             label: el.userName,
             value: el.userId,
@@ -286,23 +297,8 @@ export default {
             avatar: el.avatar
           }
         })
-        resolve([...subDeptList, ...userList])
-      } else {
-        let userRes = {}
-        if (this.selectedType === 0 || this.selectedType === 2) {
-          userRes = await this.listUserByDeptId({ deptId, userType: this._userType })
-        }
-        resolve((userRes.data || []).map(el => {
-          return {
-            label: el.userName,
-            value: el.userId,
-            subDeptNum: 0,
-            isUser: true,
-            pinyinName: el.pinyinName,
-            avatar: el.avatar
-          }
-        }))
       }
+      return userList
     },
     handleRemoveUserTag (index) {
       let tmp = [...this.selectedUserList]
