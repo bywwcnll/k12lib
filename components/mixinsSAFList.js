@@ -10,6 +10,8 @@ const recordListDataInitData = {
 
 export default {
   async created () {
+    recordListDataInitData.pageNum = this.pageNumStart
+    this.recordListData = cloneDeep(recordListDataInitData)
   },
   async mounted () {
   },
@@ -19,7 +21,7 @@ export default {
   
       safKeyWord: '',
       isLoading: false,
-      recordListData: {...recordListDataInitData},
+      recordListData: cloneDeep(recordListDataInitData),
       recordListRows: []
     }
   },
@@ -83,7 +85,7 @@ export default {
     
     resetListData () {
       this.safKeyWord = ''
-      this.recordListData = { ...recordListDataInitData }
+      this.recordListData = cloneDeep(recordListDataInitData)
       this.recordListRows = []
     },
     getInfiniteListCDom () {
@@ -116,7 +118,7 @@ export default {
         this.recordListRows = [...this.recordListRows, ...(res.data.rows || [])]
         this.recordListData = res.data
       } else {
-        this.recordListData = {...recordListDataInitData}
+        this.recordListData = cloneDeep(recordListDataInitData)
         this.recordListRows = []
       }
       if (exeLoading) this.$wisLoading(false)
