@@ -45,7 +45,7 @@
                 <template v-for="(i, idx) in (el.options || [])">
                   <div :key="`${index}_${idx}`"
                        :class="`cell ${i.id === filterForm[el.propName].id ? 'active' : ''}`"
-                       @click="filterForm[el.propName] = i">{{i.name}}</div>
+                       @click="onProp(el.propName, i)">{{i.name}}</div>
                   <template v-if="i.id === 'customTime'">
                     <div v-show="customDateEnable" class="customTimeC">
                       <datetime v-model="customTimeForm.startTime" title="开始时间" placeholder="请选择"></datetime>
@@ -234,6 +234,14 @@ export default {
     onResetFilter () {
       this.resetFilterParams()
       this.$emit('resetFilter')
+    },
+    onProp (propName, v = {}) {
+      let tmp = this.filterForm[propName]
+      if (tmp && tmp.id !== v.id) {
+        this.$emit('change', propName, v)
+      }
+      this.filterForm[propName] = v
+      this.$emit('prop', propName, v)
     }
   }
 }
