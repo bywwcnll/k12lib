@@ -10,7 +10,9 @@ const recordListDataInitData = {
 
 export default {
   async created () {
-    recordListDataInitData.pageNum = this.pageNumStart
+    if (this.pageNumStart !== null && this.pageNumStart >= 0) {
+      recordListDataInitData.pageNum = this.pageNumStart
+    }
     this.recordListData = cloneDeep(recordListDataInitData)
   },
   async mounted () {

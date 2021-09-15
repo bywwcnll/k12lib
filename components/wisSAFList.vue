@@ -47,7 +47,7 @@
                        :class="`cell ${i.id === filterForm[el.propName].id ? 'active' : ''}`"
                        @click="onProp(el.propName, i)">{{i.name}}</div>
                   <template v-if="i.id === 'customTime'">
-                    <div v-show="customDateEnable" class="customTimeC">
+                    <div :key="`${index}_${idx}`" v-show="customDateEnable" class="customTimeC">
                       <datetime v-model="customTimeForm.startTime" title="开始时间" placeholder="请选择"></datetime>
                       <datetime v-model="customTimeForm.endTime" title="结束时间" placeholder="请选择"></datetime>
                     </div>
