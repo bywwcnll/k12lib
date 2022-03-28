@@ -8,7 +8,7 @@
     </div>
 
     <wisTree :dialogVisible.sync="dialogVisible" :title="title"
-      showType="all" :allData="allDeptData" :limit="limit"
+      showType="all" :allData="allDeptData" :limit="limit" :searchPlaceholder="searchPlaceholder"
       :deptIdsList.sync="selectedDeptList"></wisTree>
   </div>
 </template>
@@ -35,7 +35,11 @@ export default {
       default: () => []
     },
     limit: Number,
-    defaultAllDeptData: Array
+    defaultAllDeptData: Array,
+    searchPlaceholder: {
+      type: String,
+      default: '搜索部门'
+    },
   },
   components: {
     [Tag.name]: Tag,
